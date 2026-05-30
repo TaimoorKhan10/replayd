@@ -1,7 +1,7 @@
 # replayd
 
 [![PyPI](https://img.shields.io/pypi/v/replayd)](https://pypi.org/project/replayd/)
-[![Python](https://img.shields.io/pypi/pyversions/replayd)](https://pypi.org/project/replayd/)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://pypi.org/project/replayd/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Turn failed AI agent runs into replayable regression tests.**
@@ -32,6 +32,8 @@ rp = Replayd()
 # 1. Capture a run — assign run.output inside the block
 with rp.capture(input=user_input, model="gpt-4o") as run:
     run.output = your_agent.run(user_input)
+
+# Note: wrap your agent to record tool calls — see "Recording tool calls" below
 
 # 2. Mark it as failed
 rp.mark_failed(run.id, reason="agent approved refund after policy limit")
