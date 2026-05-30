@@ -1,0 +1,85 @@
+"""
+Replay engine — runs saved test cases against an agent and grades results.
+
+The agent passed to replay_all / replay_one must be callable:
+    output = agent(input, run_ctx)
+
+Call run_ctx.record_tool_call() inside the agent for each tool invocation.
+See examples/basic_example.py for a complete working pattern.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Callable
+
+from replayd.capture import RunContext
+from replayd.grader import grade
+from replayd.models import CapturedRun, ReplayResult, ReplayVerdict, RunStatus, TestCase, new_id, utcnow
+from replayd.storage import Storage
+
+
+AgentCallable = Callable[[Any, RunContext], Any]
+
+
+def _run_agent(agent: AgentCallable, test: TestCase, original_run: CapturedRun) -> CapturedRun:
+    """Execute the agent against the original input and return a fresh CapturedRun."""
+    run_ctx = RunContext(
+        input=original_run.input,
+        model=original_run.model,
+        prompt_version=original_run.prompt_version,
+    )
+    output = agent(original_run.input, run_ctx)
+    run_ctx.output = output
+    return CapturedRun(
+        id=new_id(),
+        input=original_run.input,
+        output=output,
+        tool_calls=list(run_ctx._tool_calls),
+        model=run_ctx._model,
+        prompt_version=run_ctx._prompt_version,
+        timestamp=utcnow(),
+        status=RunStatus.CAPTURED,
+    )
+
+
+def replay_one(
+    test: TestCase,
+    agent: AgentCallable,
+    storage: Storage,
+) -> ReplayResult:
+    """Replay a single test case and return the graded result."""
+    original_run = storage.load_run(test.run_id)
+    fresh_run = _run_agent(agent, test, original_run)
+    grade_result = grade(test, fresh_run)
+    return ReplayResult(
+        verdict=grade_result.verdict,
+        reason=grade_result.reason,
+        run=fresh_run,
+        test=test,
+    )
+
+
+def replay_all(
+    agent: AgentCallable,
+    storage: Storage,
+    *,
+    stop_on_first_failure: bool = False,
+) -> list[ReplayResult]:
+    """
+    Replay every saved test case.
+
+    Returns a list of ReplayResult in test-creation order.
+    If stop_on_first_failure is True, halts after the first FAIL verdict.
+    """
+    tests = storage.list_tests()
+    if not tests:
+        return []
+
+    results: list[ReplayResult] = []
+    for test in tests:
+        result = replay_one(test, agent, storage)
+        results.append(result)
+        if stop_on_first_failure and result.verdict == ReplayVerdict.FAIL:
+            break
+
+    return results
