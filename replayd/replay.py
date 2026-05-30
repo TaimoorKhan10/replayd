@@ -21,7 +21,7 @@ from replayd.storage import Storage
 AgentCallable = Callable[[Any, RunContext], Any]
 
 
-def _run_agent(agent: AgentCallable, test: TestCase, original_run: CapturedRun) -> CapturedRun:
+def _run_agent(agent: AgentCallable, original_run: CapturedRun) -> CapturedRun:
     """Execute the agent against the original input and return a fresh CapturedRun."""
     run_ctx = RunContext(
         input=original_run.input,
@@ -46,10 +46,38 @@ def replay_one(
     test: TestCase,
     agent: AgentCallable,
     storage: Storage,
+    _run_cache: dict[str, CapturedRun] | None = None,
 ) -> ReplayResult:
     """Replay a single test case and return the graded result."""
-    original_run = storage.load_run(test.run_id)
-    fresh_run = _run_agent(agent, test, original_run)
+    if _run_cache is not None and test.run_id in _run_cache:
+        original_run = _run_cache[test.run_id]
+    else:
+        original_run = storage.load_run(test.run_id)
+        if _run_cache is not None:
+            _run_cache[test.run_id] = original_run
+
+    try:
+        fresh_run = _run_agent(agent, original_run)
+    except Exception as exc:
+        # Agent crashed during replay. Return a FAIL result instead of
+        # propagating the exception and aborting the entire replay_all run.
+        failed_run = CapturedRun(
+            id=new_id(),
+            input=original_run.input,
+            output=None,
+            tool_calls=[],
+            model=original_run.model,
+            prompt_version=original_run.prompt_version,
+            timestamp=utcnow(),
+            status=RunStatus.CAPTURED,
+        )
+        return ReplayResult(
+            verdict=ReplayVerdict.FAIL,
+            reason=f"Agent raised {type(exc).__name__} during replay: {exc}",
+            run=failed_run,
+            test=test,
+        )
+
     grade_result = grade(test, fresh_run)
     return ReplayResult(
         verdict=grade_result.verdict,
@@ -71,13 +99,23 @@ def replay_all(
     Returns a list of ReplayResult in test-creation order.
     If stop_on_first_failure is True, halts after the first FAIL verdict.
     """
+    if not callable(agent):
+        raise TypeError(
+            f"agent must be a callable that accepts (input, run_ctx), "
+            f"got {type(agent).__name__} instead."
+        )
+
     tests = storage.list_tests()
     if not tests:
         return []
 
+    # Cache original runs in memory so each run file is read at most once,
+    # even when multiple tests reference the same run.
+    run_cache: dict[str, CapturedRun] = {}
+
     results: list[ReplayResult] = []
     for test in tests:
-        result = replay_one(test, agent, storage)
+        result = replay_one(test, agent, storage, _run_cache=run_cache)
         results.append(result)
         if stop_on_first_failure and result.verdict == ReplayVerdict.FAIL:
             break
