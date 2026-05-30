@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "replayd"
+version = "0.1.2"
+description = "Turn failed AI agent runs into replayable regression tests"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = []
+authors = [
+    { name = "Taimoor Khan", email = "taimoorkhaniajaznabi@gmail.com" }
+]
+
+[project.optional-dependencies]
+semantic = ["anthropic>=0.40.0"]
+dev = [
+    "pytest>=8.0",
+    "anthropic>=0.40.0",
+]
+
+[project.urls]
+Homepage = "https://stonepathlab.net"
+Repository = "https://github.com/TaimoorKhan10/replayd"
+
+[tool.hatch.build.targets.wheel]
+packages = ["replayd"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
