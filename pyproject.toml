@@ -10,6 +10,9 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 dependencies = []
+authors = [
+    { name = "Taimoor Khan", email = "taimoorkhaniajaznabi@gmail.com" }
+]
 
 [project.optional-dependencies]
 semantic = ["anthropic>=0.40.0"]
@@ -20,7 +23,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://stonepathlab.net"
-Repository = "https://github.com/stonepath-labs/replayd"
+Repository = "https://github.com/TaimoorKhan10/replayd"
 
 [tool.hatch.build.targets.wheel]
 packages = ["replayd"]
