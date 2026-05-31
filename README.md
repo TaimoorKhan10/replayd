@@ -18,7 +18,7 @@ pip install replayd
 ---
 
 <p align="center">
-  <img src="assets/replayd-flow.svg" alt="replayd: failed run → capture → save as test → replay on change → PASS or FAIL" width="840">
+<img src="https://raw.githubusercontent.com/TaimoorKhan10/replayd/main/assets/replayd-flow.svg" alt="replayd: failed run → capture → save as test → replay on change → PASS or FAIL" width="860">
 </p>
 
 ---
@@ -94,7 +94,7 @@ rp.save_test(
 )
 
 # 4. After changing your prompt or model, replay all saved tests
-#    Agent must accept (input, run_ctx) — see "Recording tool calls" below
+#    Agent must accept (input, run_ctx) — see Recording tool calls below
 def your_agent_fn(input, run_ctx):
     result = your_agent.run(input)
     run_ctx.record_tool_call("approve_refund", {"amount": result["amount"]}, result)
