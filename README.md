@@ -211,7 +211,7 @@ It works alongside tools like LangSmith, Braintrust, and Arize — they cover wh
 
 ## Part of TAQ by Stonepath Labs
 
-replayd is the open source core of [TAQ](https://stonepathlab.net) — a release control platform for AI agents.
+replayd is the open source core of [TAQ](https://stonepathlab.net) a release control platform for AI agents.
 
 The open source project covers the core loop: capture failures, save them as tests, replay before release.
 
@@ -242,4 +242,4 @@ pytest
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT  see [LICENSE](LICENSE).
