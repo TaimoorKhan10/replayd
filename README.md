@@ -9,7 +9,7 @@
 
 AI agents regress silently.
 
-You fix a failure, change a prompt, model, or tool — and the same mistake comes back. Nobody catches it until a user hits it again. replayd captures failed runs and replays them before release, so old failures cannot return undetected.
+You fix a failure, change a prompt, model, or tool and the same mistake comes back. Nobody catches it until a user hits it again. replayd captures failed runs and replays them before release, so old failures cannot return undetected.
 
 ```bash
 pip install replayd
@@ -54,7 +54,7 @@ The failure was captured, saved, replayed against the broken agent (FAIL), then 
 
 ## Why this matters
 
-Prompt changes, model upgrades, tool changes, and retrieval changes can all bring back old agent failures. There is no pytest for AI agents. replayd makes those failures reusable — a failed run becomes the test that blocks the next bad deploy.
+Prompt changes, model upgrades, tool changes, and retrieval changes can all bring back old agent failures. There is no pytest for AI agents. replayd makes those failures reusable  a failed run becomes the test that blocks the next bad deploy.
 
 ---
 
@@ -130,11 +130,11 @@ Framework-specific integrations are on the roadmap. For now, the explicit wrappe
 
 ## Grading
 
-replayd does **not** grade on exact output matching. LLMs are non-deterministic — the same correct behavior produces different output text every run. The wrong tool being called, however, is a fact. replayd grades on facts.
+replayd does **not** grade on exact output matching. LLMs are non-deterministic  the same correct behavior produces different output text every run. The wrong tool being called, however, is a fact. replayd grades on facts.
 
 | Failure type | Grading method |
 |---|---|
-| Wrong tool called, wrong argument, wrong state | Deterministic assertion — no LLM needed, never flaky |
+| Wrong tool called, wrong argument, wrong state | Deterministic assertion  no LLM needed, never flaky |
 | Policy violated, wrong reasoning, bad decision | LLM-as-judge via `grader_prompt` |
 
 The structural check always runs first. A forbidden action firing fails the test immediately without calling an LLM.
