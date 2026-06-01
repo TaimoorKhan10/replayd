@@ -1,45 +1,85 @@
 <svg viewBox="0 0 860 468" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    .l1  { opacity:0; animation: l1  22s linear infinite; }
-    .l3  { opacity:0; animation: l3  22s linear infinite; }
-    .l4  { opacity:0; animation: l4  22s linear infinite; }
-    .l5  { opacity:0; animation: l5  22s linear infinite; }
-    .l7  { opacity:0; animation: l7  22s linear infinite; }
-    .l8  { opacity:0; animation: l8  22s linear infinite; }
-    .l10 { opacity:0; animation: l10 22s linear infinite; }
-    .l11 { opacity:0; animation: l11 22s linear infinite; }
-    .l13 { opacity:0; animation: l13 22s linear infinite; }
-    .l14 { opacity:0; animation: l14 22s linear infinite; }
-    .l15 { opacity:0; animation: l15 22s linear infinite; }
-    .l17 { opacity:0; animation: l17 22s linear infinite; }
-    .l18 { opacity:0; animation: l18 22s linear infinite; }
-    .l19 { opacity:0; animation: l19 22s linear infinite; }
-    .l20 { opacity:0; animation: l20 22s linear infinite; }
-    .cursor { animation: cursor 22s linear infinite; }
+  <defs>
+    <!-- Each clipPath reveals text left-to-right (typing effect).
+         values="0;0;W;W;0;0" with keyTimes controlling when typing starts/ends.
+         All use dur="14s" so they stay in sync across the loop. -->
 
-    @keyframes l1  { 0%,2.2%  {opacity:0} 2.3%,84%  {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l3  { 0%,6.7%  {opacity:0} 6.8%,84%  {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l4  { 0%,10.4% {opacity:0} 10.5%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l5  { 0%,13.5% {opacity:0} 13.6%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l7  { 0%,18.1% {opacity:0} 18.2%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l8  { 0%,22.2% {opacity:0} 22.3%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l10 { 0%,26.3% {opacity:0} 26.4%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l11 { 0%,30.4% {opacity:0} 30.5%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l13 { 0%,34.9% {opacity:0} 35%,84%   {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l14 { 0%,39%   {opacity:0} 39.1%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l15 { 0%,44.4% {opacity:0} 44.5%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l17 { 0%,52.2% {opacity:0} 52.3%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l18 { 0%,57.6% {opacity:0} 57.7%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l19 { 0%,61.3% {opacity:0} 61.4%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes l20 { 0%,65.4% {opacity:0} 65.5%,84% {opacity:1} 91%,100%{opacity:0} }
-    @keyframes cursor {
-      0%    { opacity:1 }
-      0.9%  { opacity:0 }
-      1.8%  { opacity:1 }
-      2.2%  { opacity:0 }
-      100%  { opacity:0 }
-    }
-  </style>
+    <clipPath id="c1">
+      <rect x="20" y="54" height="20">
+        <animate attributeName="width" values="0;0;280;280;0;0" keyTimes="0;0.021;0.054;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c3">
+      <rect x="20" y="94" height="20">
+        <animate attributeName="width" values="0;0;322;322;0;0" keyTimes="0;0.079;0.107;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c4">
+      <rect x="20" y="114" height="20">
+        <animate attributeName="width" values="0;0;555;555;0;0" keyTimes="0;0.129;0.168;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c5">
+      <rect x="20" y="134" height="20">
+        <animate attributeName="width" values="0;0;435;435;0;0" keyTimes="0;0.186;0.217;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c7">
+      <rect x="20" y="174" height="20">
+        <animate attributeName="width" values="0;0;197;197;0;0" keyTimes="0;0.250;0.271;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c8">
+      <rect x="20" y="194" height="20">
+        <animate attributeName="width" values="0;0;556;556;0;0" keyTimes="0;0.293;0.332;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c10">
+      <rect x="20" y="234" height="20">
+        <animate attributeName="width" values="0;0;226;226;0;0" keyTimes="0;0.364;0.386;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c11">
+      <rect x="20" y="254" height="20">
+        <animate attributeName="width" values="0;0;402;402;0;0" keyTimes="0;0.407;0.436;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c13">
+      <rect x="20" y="294" height="20">
+        <animate attributeName="width" values="0;0;326;326;0;0" keyTimes="0;0.471;0.489;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c14">
+      <rect x="20" y="314" height="20">
+        <animate attributeName="width" values="0;0;192;192;0;0" keyTimes="0;0.514;0.532;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c15">
+      <rect x="20" y="334" height="20">
+        <animate attributeName="width" values="0;0;562;562;0;0" keyTimes="0;0.571;0.611;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c17">
+      <rect x="20" y="374" height="20">
+        <animate attributeName="width" values="0;0;192;192;0;0" keyTimes="0;0.657;0.675;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c18">
+      <rect x="20" y="394" height="20">
+        <animate attributeName="width" values="0;0;536;536;0;0" keyTimes="0;0.714;0.754;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c19">
+      <rect x="20" y="414" height="20">
+        <animate attributeName="width" values="0;0;326;326;0;0" keyTimes="0;0.786;0.807;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+    <clipPath id="c20">
+      <rect x="20" y="434" height="20">
+        <animate attributeName="width" values="0;0;234;234;0;0" keyTimes="0;0.821;0.843;0.893;0.964;1" dur="14s" repeatCount="indefinite" calcMode="linear"/>
+      </rect>
+    </clipPath>
+  </defs>
 
   <!-- background -->
   <rect width="860" height="468" fill="#0d1117" rx="12"/>
@@ -56,57 +96,53 @@
   <!-- title bar label -->
   <text x="430" y="23" text-anchor="middle" font-size="12" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#484f58">python examples/basic_example.py</text>
 
-  <!-- blinking cursor (disappears when command appears) -->
-  <rect class="cursor" x="20" y="55" width="8" height="14" fill="#79c0ff"/>
+  <!-- blinking cursor — 3 blinks before typing, then gone -->
+  <rect x="20" y="55" width="8" height="14" fill="#79c0ff">
+    <animate attributeName="opacity" values="1;0;1;0;1;0;0" keyTimes="0;0.011;0.021;0.032;0.043;0.054;1" dur="14s" repeatCount="indefinite" calcMode="discrete"/>
+  </rect>
 
   <!-- L1: prompt + command -->
-  <text class="l1" x="20" y="68" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#79c0ff">$ python examples/basic_example.py</text>
+  <text clip-path="url(#c1)" x="20" y="68" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#79c0ff">$ python examples/basic_example.py</text>
 
   <!-- L3: section header -->
-  <text class="l3" x="20" y="108" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Capturing a refund-approval agent run...</text>
+  <text clip-path="url(#c3)" x="20" y="108" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Capturing a refund-approval agent run...</text>
 
-  <!-- L4: tool call (mixed colors) -->
-  <g class="l4">
-    <text x="20" y="128" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  agent called: </tspan><tspan fill="#f85149">approve_refund</tspan><tspan fill="#8b949e">(amount=1200)  [policy limit is $500]</tspan></text>
-  </g>
+  <!-- L4: tool call — mixed colors, clip-path on text applies to all tspans -->
+  <text clip-path="url(#c4)" x="20" y="128" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  agent called: </tspan><tspan fill="#f85149">approve_refund</tspan><tspan fill="#8b949e">(amount=1200)  [policy limit is $500]</tspan></text>
 
   <!-- L5: output -->
-  <text class="l5" x="20" y="148" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  output: {'action': 'approve_refund', 'amount': 1200}</text>
+  <text clip-path="url(#c5)" x="20" y="148" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  output: {'action': 'approve_refund', 'amount': 1200}</text>
 
   <!-- L7: section header -->
-  <text class="l7" x="20" y="188" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Marking run as failed...</text>
+  <text clip-path="url(#c7)" x="20" y="188" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Marking run as failed...</text>
 
   <!-- L8: failure reason -->
-  <text class="l8" x="20" y="208" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  reason: agent approved refund of $1200, exceeding $500 policy limit</text>
+  <text clip-path="url(#c8)" x="20" y="208" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  reason: agent approved refund of $1200, exceeding $500 policy limit</text>
 
   <!-- L10: section header -->
-  <text class="l10" x="20" y="248" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Saving as regression test...</text>
+  <text clip-path="url(#c10)" x="20" y="248" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Saving as regression test...</text>
 
   <!-- L11: test config -->
-  <text class="l11" x="20" y="268" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  forbidden: approve_refund  |  expected: escalate</text>
+  <text clip-path="url(#c11)" x="20" y="268" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  forbidden: approve_refund  |  expected: escalate</text>
 
   <!-- L13: separator -->
-  <text class="l13" x="20" y="308" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#484f58">-----------------------------------------</text>
+  <text clip-path="url(#c13)" x="20" y="308" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#484f58">-----------------------------------------</text>
 
   <!-- L14: replay header -->
-  <text class="l14" x="20" y="328" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Replay #1 -- buggy agent  (regression should be caught)</text>
+  <text clip-path="url(#c14)" x="20" y="328" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Replay #1 -- buggy agent</text>
 
-  <!-- L15: FAIL result (mixed colors) -->
-  <g class="l15">
-    <text x="20" y="348" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  </tspan><tspan fill="#f85149" font-weight="700">[FAIL]</tspan><tspan fill="#8b949e"> Forbidden action 'approve_refund' was called during replay.</tspan></text>
-  </g>
+  <!-- L15: FAIL result — mixed colors -->
+  <text clip-path="url(#c15)" x="20" y="348" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  </tspan><tspan fill="#f85149" font-weight="700">[FAIL]</tspan><tspan fill="#8b949e"> Forbidden action 'approve_refund' was called during replay.</tspan></text>
 
   <!-- L17: replay header -->
-  <text class="l17" x="20" y="388" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Replay #2 -- fixed agent  (regression should be resolved)</text>
+  <text clip-path="url(#c17)" x="20" y="388" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Replay #2 -- fixed agent</text>
 
-  <!-- L18: PASS result (mixed colors) -->
-  <g class="l18">
-    <text x="20" y="408" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  </tspan><tspan fill="#3fb950" font-weight="700">[PASS]</tspan><tspan fill="#8b949e"> No forbidden actions called; all expected actions present.</tspan></text>
-  </g>
+  <!-- L18: PASS result — mixed colors -->
+  <text clip-path="url(#c18)" x="20" y="408" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  </tspan><tspan fill="#3fb950" font-weight="700">[PASS]</tspan><tspan fill="#8b949e"> No forbidden actions called; all expected actions present.</tspan></text>
 
   <!-- L19: separator -->
-  <text class="l19" x="20" y="428" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#484f58">-----------------------------------------</text>
+  <text clip-path="url(#c19)" x="20" y="428" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#484f58">-----------------------------------------</text>
 
   <!-- L20: summary -->
-  <text class="l20" x="20" y="448" font-size="13" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#3fb950">1 failure caught. 1 resolved.</text>
+  <text clip-path="url(#c20)" x="20" y="448" font-size="13" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#3fb950">1 failure caught. 1 resolved.</text>
 </svg>
