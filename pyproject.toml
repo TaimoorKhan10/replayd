@@ -13,6 +13,18 @@ dependencies = []
 authors = [
     { name = "Taimoor Khan", email = "taimoorkhaniajaznabi@gmail.com" }
 ]
+keywords = ["ai", "agents", "testing", "regression", "llm", "replay", "machine-learning"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 
 [project.optional-dependencies]
 semantic = ["anthropic>=0.40.0"]
