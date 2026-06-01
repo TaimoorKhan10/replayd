@@ -1,0 +1,93 @@
+<svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L8,3.5 z" fill="#3d444d"/>
+    </marker>
+    <marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L8,3.5 z" fill="#3d444d"/>
+    </marker>
+  </defs>
+
+  <!-- bg -->
+  <rect width="900" height="220" fill="#0d1117" rx="12"/>
+
+  <!-- top label -->
+  <text x="450" y="28" text-anchor="middle" fill="#484f58" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.08em">HOW IT WORKS</text>
+
+  <!-- ── BOX 1: Failed Run ── -->
+  <rect x="24" y="44" width="148" height="88" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1.2"/>
+  <rect x="24" y="44" width="148" height="22" rx="8" fill="#2d0e0e"/>
+  <rect x="24" y="54" width="148" height="12" fill="#2d0e0e"/>
+  <text x="98" y="61" text-anchor="middle" fill="#f85149" font-size="10" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.06em">PRODUCTION FAILURE</text>
+  <text x="98" y="83" text-anchor="middle" fill="#8b949e" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">agent called:</text>
+  <text x="98" y="99" text-anchor="middle" fill="#f85149" font-size="12" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">approve_refund</text>
+  <text x="98" y="116" text-anchor="middle" fill="#484f58" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">amount=$1200</text>
+
+  <!-- arrow 1→2 -->
+  <line x1="172" y1="88" x2="198" y2="88" stroke="#3d444d" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ── BOX 2: Capture ── -->
+  <rect x="200" y="44" width="148" height="88" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="200" y="44" width="148" height="22" rx="8" fill="#1c2128"/>
+  <rect x="200" y="54" width="148" height="12" fill="#1c2128"/>
+  <text x="274" y="61" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.06em">CAPTURE</text>
+  <text x="274" y="83" text-anchor="middle" fill="#8b949e" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">rp.capture()</text>
+  <text x="274" y="99" text-anchor="middle" fill="#8b949e" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">rp.mark_failed()</text>
+  <text x="274" y="116" text-anchor="middle" fill="#484f58" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">input · tools · model</text>
+
+  <!-- arrow 2→3 -->
+  <line x1="348" y1="88" x2="374" y2="88" stroke="#3d444d" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ── BOX 3: Save as Test ── -->
+  <rect x="376" y="44" width="148" height="88" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="376" y="44" width="148" height="22" rx="8" fill="#1c2128"/>
+  <rect x="376" y="54" width="148" height="12" fill="#1c2128"/>
+  <text x="450" y="61" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.06em">SAVE AS TEST</text>
+  <text x="450" y="83" text-anchor="middle" fill="#8b949e" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">rp.save_test()</text>
+  <text x="450" y="99" text-anchor="middle" fill="#8b949e" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">forbidden_actions=</text>
+  <text x="450" y="116" text-anchor="middle" fill="#484f58" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">stored in .replayd/</text>
+
+  <!-- arrow 3→4 -->
+  <line x1="524" y1="88" x2="550" y2="88" stroke="#3d444d" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ── BOX 4: Replay ── -->
+  <rect x="552" y="44" width="148" height="88" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="552" y="44" width="148" height="22" rx="8" fill="#1c2128"/>
+  <rect x="552" y="54" width="148" height="12" fill="#1c2128"/>
+  <text x="626" y="61" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.06em">REPLAY ON CHANGE</text>
+  <text x="626" y="83" text-anchor="middle" fill="#8b949e" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">rp.replay_all()</text>
+  <text x="626" y="99" text-anchor="middle" fill="#8b949e" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">prompt · model · tool</text>
+  <text x="626" y="116" text-anchor="middle" fill="#484f58" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">retrieval change</text>
+
+  <!-- arrow 4→verdict fork -->
+  <line x1="700" y1="88" x2="726" y2="88" stroke="#3d444d" stroke-width="1.5"/>
+  <!-- fork up -->
+  <line x1="726" y1="88" x2="726" y2="57" stroke="#3d444d" stroke-width="1.5"/>
+  <line x1="726" y1="57" x2="750" y2="57" stroke="#3d444d" stroke-width="1.5" marker-end="url(#a)"/>
+  <!-- fork down -->
+  <line x1="726" y1="88" x2="726" y2="119" stroke="#3d444d" stroke-width="1.5"/>
+  <line x1="726" y1="119" x2="750" y2="119" stroke="#3d444d" stroke-width="1.5" marker-end="url(#b)"/>
+
+  <!-- ── PASS box ── -->
+  <rect x="752" y="36" width="124" height="42" rx="7" fill="#0d2818" stroke="#238636" stroke-width="1.2"/>
+  <text x="814" y="54" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">✓  PASS</text>
+  <text x="814" y="69" text-anchor="middle" fill="#3fb950" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">cleared → ship</text>
+
+  <!-- ── FAIL box ── -->
+  <rect x="752" y="99" width="124" height="42" rx="7" fill="#2d0e0e" stroke="#f85149" stroke-width="1.2"/>
+  <text x="814" y="117" text-anchor="middle" fill="#f85149" font-size="13" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">✗  FAIL</text>
+  <text x="814" y="132" text-anchor="middle" fill="#f85149" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">returned → block</text>
+
+  <!-- step labels -->
+  <text x="98"  y="148" text-anchor="middle" fill="#3d444d" font-size="9" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">① failure</text>
+  <text x="274" y="148" text-anchor="middle" fill="#3d444d" font-size="9" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">② capture</text>
+  <text x="450" y="148" text-anchor="middle" fill="#3d444d" font-size="9" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">③ save</text>
+  <text x="626" y="148" text-anchor="middle" fill="#3d444d" font-size="9" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">④ replay</text>
+  <text x="814" y="155" text-anchor="middle" fill="#3d444d" font-size="9" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">⑤ verdict</text>
+
+  <!-- divider -->
+  <line x1="40" y1="168" x2="860" y2="168" stroke="#21262d" stroke-width="1"/>
+
+  <!-- bottom bar -->
+  <text x="450" y="192" text-anchor="middle" fill="#3d444d" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">replayd  ·  regression tests for AI agents  ·  github.com/TaimoorKhan10/replayd</text>
+</svg>
