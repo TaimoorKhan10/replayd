@@ -92,11 +92,11 @@ for r in results:
 
 ## See it working
 
-```
-$ python examples/basic_example.py
+Run the included example (`python examples/basic_example.py`) and you get:
 
+```
 Capturing a refund-approval agent run...
-  agent called: approve_refund(amount=1200, customer_id=cust-42)  [policy limit is $500]
+  agent called: approve_refund(amount=1200)  [policy limit is $500]
   output: {'action': 'approve_refund', 'amount': 1200}
 
 Marking run as failed...
@@ -115,65 +115,10 @@ Replay #2 -- fixed agent (regression should be resolved)
 1 failure caught. 1 resolved.
 ```
 
-The failure was captured, saved, replayed against the broken agent (FAIL), then replayed against the fixed agent (PASS). That is the full loop.
-
----
-
-## Why this matters
-
-Prompt changes, model upgrades, tool changes, and retrieval changes can all bring back old agent failures. There is no pytest for AI agents. replayd makes those failures reusable  a failed run becomes the test that blocks the next bad deploy.
-
----
-
-## Who is replayd for?
-
-replayd is for teams shipping agents that can fail in ways they cannot afford to repeat:
-
-- customer support and refund approval agents
-- tool-calling and function-calling agents
-- RAG and retrieval agents
-- internal workflow and orchestration agents
-- coding, browser, and planning agents
-
-If your agent can fail in a way you do not want repeated, replayd turns that failure into a test.
-
----
-
-## Quickstart
-
-```python
-from replayd import Replayd
-
-rp = Replayd()
-
-# 1. Capture a run — assign run.output inside the block
-with rp.capture(input=user_input, model="gpt-4o") as run:
-    run.output = your_agent.run(user_input)
-
-# 2. Mark it as failed
-rp.mark_failed(run.id, reason="agent approved refund after policy limit")
-
-# 3. Save as a regression test
-rp.save_test(
-    run.id,
-    forbidden_actions=["approve_refund"],
-    expected_action="escalate",
-)
-
-# 4. After changing your prompt or model, replay all saved tests
-#    Agent must accept (input, run_ctx) — see Recording tool calls below
-def your_agent_fn(input, run_ctx):
-    result = your_agent.run(input)
-    run_ctx.record_tool_call("approve_refund", {"amount": result["amount"]}, result)
-    return result
-
-results = rp.replay_all(agent=your_agent_fn)
-
-for r in results:
-    print(r.verdict, r.reason)
-```
+The failure was captured, saved, replayed against a broken agent (FAIL), and replayed again against the fixed agent (PASS). That is the full loop.
 
 ## Why replayd
+
 AI agents do not only fail once. They regress. You change a prompt, a model, a tool schema, or a retrieval setup, and something that used to work quietly breaks again. Traditional software has regression tests and CI/CD to catch this. AI agents have had nothing equivalent.
 
 replayd is the open source fix. Failed runs become replayable tests. Old failures cannot return undetected.
@@ -191,6 +136,7 @@ replayd is the open source fix. Failed runs become replayable tests. Old failure
 replayd is not an alternative to observability tools. It works alongside them. LangSmith and Langfuse tell you what happened. replayd makes sure the worst things cannot happen again.
 
 ## Example agents
+
 Three production-grade example agents are included. Run any of them with no API key required — all grading is structural.
 
 | Agent | What it catches |
@@ -221,20 +167,24 @@ def my_agent(input, run_ctx):
     run_ctx.record_tool_call("search", {"query": input["query"]}, result)
     # ... rest of agent logic
     return final_output
+```
 
+Pass this two-argument callable to `replay_all`:
+
+```python
 results = rp.replay_all(agent=my_agent)
 ```
 
 ## Grading
 
-replayd does **not** grade on exact output matching. LLMs are non-deterministic  the same correct behavior produces different output text every run. The wrong tool being called, however, is a fact. replayd grades on facts.
+replayd does **not** grade on exact output matching. LLMs are non-deterministic — the same correct behavior will produce different output text every run, so exact matching creates false failures. The wrong tool being called, however, is a fact. replayd grades on facts.
 
 | Failure type | Grading method |
 |---|---|
-| Wrong tool called, wrong argument, wrong state | Deterministic assertion  no LLM needed, never flaky |
+| Wrong tool called, wrong argument, wrong state | Deterministic assertion — no LLM needed, never flaky |
 | Policy violated, wrong reasoning, bad decision | LLM-as-judge via `grader_prompt` |
 
-The structural check always runs first. A forbidden action firing fails the test immediately without calling an LLM.
+The structural check always runs first. If a forbidden action fires, the test fails immediately without calling the LLM.
 
 ### Semantic grading
 
@@ -260,15 +210,15 @@ Runs and tests are stored as JSON files in `.replayd/` in your working directory
 
 ```
 .replayd/
-  runs/<run-id>.json    ← full record of each captured run
-  tests/<test-id>.json  ← saved regression tests
+  runs/<run-id>.json    <- full record of each captured run
+  tests/<test-id>.json  <- saved regression tests
 ```
 
 No database. No hosted backend. Commit `.replayd/tests/` into version control to share regression tests with your team. Keep `.replayd/runs/` out of git — it is local capture data.
 
 ## CI integration
 
-A ready-to-use script is at `scripts/regression_check.py`. Copy it into your repo, replace the agent import, and add this step:
+A ready-to-use script is included at `scripts/regression_check.py`. Copy it into your repo, replace the agent import, and add this to your workflow:
 
 ```yaml
 # .github/workflows/regression.yml
@@ -279,9 +229,11 @@ A ready-to-use script is at `scripts/regression_check.py`. Copy it into your rep
 Any saved regression test that fails exits with code 1, blocking the deploy.
 
 ## What replayd is not
+
 replayd is not an observability tool. LangSmith, Braintrust, and Arize tell you what happened after the fact. replayd is an **active release gate** — it replays known failures before you ship. Passive vs active. That is the distinction.
 
 ## What builders say
+
 > "If something solved this it would definitely be worth paying for." — r/ycombinator
 
 > "Replaying old failures against new prompts and models should be standard at this point. Otherwise the same bugs just keep coming back quietly." — r/LLMDevs
@@ -304,19 +256,17 @@ Every star helps more builders find replayd. If it has saved you from a regressi
 
 ## Part of TAQ by Stonepath Labs
 
-replayd is the open source core of [TAQ](https://stonepathlab.net) a release control platform for AI agents.
+replayd is the open source core of [TAQ](https://stonepathlab.net) — the full AI release control platform.
 
-The open source project covers the core loop: capture failures, save them as tests, replay before release.
-
-TAQ adds: hosted backend, team dashboards, release gate enforcement, CI/CD integration, and audit logs.
+TAQ adds: a dashboard, hosted backend, team access controls, release gate enforcement, and audit logs. replayd gets your team started with the concept. TAQ is what you run it on in production.
 
 **[stonepathlab.net](https://stonepathlab.net)**
 
 ## Contributing
 
-Bug reports, examples, and pull requests are welcome. Open an issue before sending a large PR.
+Bug reports and pull requests are welcome. Open an issue on GitHub to discuss anything before sending a large PR.
 
-**Good first contributions:**
+The build has no dependencies — `pip install -e ".[dev]"` gives you everything needed to run tests:
 
 ```bash
 pip install -e ".[dev]"
@@ -331,8 +281,9 @@ pytest
 - Improve the getting started documentation
 
 ## Star history
+
 [![Star History Chart](https://api.star-history.com/svg?repos=TaimoorKhan10/replayd&type=Date)](https://star-history.com/#TaimoorKhan10/replayd&Date)
 
 ## License
 
-MIT  see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
