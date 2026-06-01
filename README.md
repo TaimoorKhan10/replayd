@@ -18,8 +18,13 @@
   <code>pip install replayd</code>
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/TaimoorKhan10/replayd/main/assets/replayd-flow.svg" alt="replayd: failed run → capture → save as test → replay on change → PASS or FAIL" width="860">
+</p>
+
 ## Table of contents
 - [The problem](#the-problem)
+- [Who is replayd for](#who-is-replayd-for)
 - [How it works](#quickstart)
 - [See it working](#see-it-working)
 - [Why replayd](#why-replayd)
@@ -42,6 +47,18 @@
 | Agent fails in production | Fixed manually, forgotten | Saved as a replayable regression test |
 | You change a prompt or model | Hope the old failure does not return | Replay proves it cannot return |
 | Same bug comes back | Users catch it | Release is blocked before deploy |
+
+## Who is replayd for
+
+replayd is for teams shipping agents that can fail in ways they cannot afford to repeat:
+
+- customer support and refund approval agents
+- tool-calling and function-calling agents
+- RAG and retrieval agents
+- internal workflow and orchestration agents
+- coding, browser, and planning agents
+
+If your agent can fail in a way you do not want repeated, replayd turns that failure into a test.
 
 ## Quickstart
 
@@ -138,7 +155,9 @@ Each example shows FAIL on the buggy agent and PASS on the fixed agent.
 
 ## Recording tool calls
 
-replayd cannot intercept tool calls automatically. Wrap your agent's tool dispatcher to record them:
+replayd cannot intercept tool calls automatically. Wrap your agent's tool dispatcher to record them.
+
+**The agent you pass to `replay_all` must accept two arguments: `(input, run_ctx)`.**
 
 ```python
 def my_agent(input, run_ctx):
@@ -178,7 +197,7 @@ rp.save_test(
 
 Requires:
 
-```
+```bash
 pip install "replayd[semantic]"
 export ANTHROPIC_API_KEY=sk-...
 ```
@@ -193,7 +212,7 @@ Runs and tests are stored as JSON files in `.replayd/` in your working directory
   tests/<test-id>.json  <- saved regression tests
 ```
 
-No database. No hosted backend. Check `.replayd/tests/` into version control to share tests with your team. The `.gitignore` included in this repo excludes `.replayd/` by default — commit only the `tests/` subfolder, not captured runs.
+No database. No hosted backend. Commit `.replayd/tests/` into version control to share regression tests with your team. Keep `.replayd/runs/` out of git — it is local capture data.
 
 ## CI integration
 
@@ -204,6 +223,8 @@ A ready-to-use script is included at `scripts/regression_check.py`. Copy it into
 - name: Run regression tests
   run: python scripts/regression_check.py
 ```
+
+Any saved regression test that fails exits with code 1, blocking the deploy.
 
 ## What replayd is not
 replayd is not an observability tool. LangSmith, Braintrust, and Arize tell you what happened after the fact. replayd is an **active release gate** — it replays known failures before you ship. Passive vs active. That is the distinction.
@@ -243,7 +264,7 @@ Bug reports and pull requests are welcome. Open an issue on GitHub to discuss an
 
 The build has no dependencies — `pip install -e ".[dev]"` gives you everything needed to run tests:
 
-```
+```bash
 pip install -e ".[dev]"
 pytest
 ```
