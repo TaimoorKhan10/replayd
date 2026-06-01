@@ -2,7 +2,7 @@
 
 **Turn failed AI agent runs into replayable regression tests.**
 
-This document covers the three example agents added to the `examples/` directory, explains how each one demonstrates the replayd release-control loop, and records codebase findings discovered during implementation.
+This document covers the three example agents in the `examples/` directory and explains how each one demonstrates the replayd release-control loop.
 
 ---
 
@@ -17,8 +17,6 @@ This document covers the three example agents added to the `examples/` directory
 7. [Running everything](#running-everything)
 8. [Test results](#test-results)
 9. [Grading reference](#grading-reference)
-10. [Codebase issues discovered](#codebase-issues-discovered)
-11. [SDK improvements before public demo](#sdk-improvements-before-public-demo)
 
 ---
 
@@ -517,120 +515,6 @@ The LLM judge receives the original failure reason, the replay output, and the r
 | No | Yes | — | **FAIL** (structural) |
 | No | No | Yes | LLM judge → PASS or FAIL |
 | No | No | No | **PASS** |
-
----
-
-## Codebase issues discovered
-
-These were found during implementation of the three examples and stress testing.
-
-### 1. Grading model is hardcoded
-
-**File:** `replayd/grader.py`, line 118
-
-```python
-model="claude-haiku-4-5-20251001",
-```
-
-The Anthropic model slug is hardcoded inside the library. If the model is deprecated or the team wants to use a different judge, they must edit library source code.
-
-**Fix:** Accept a `grader_model` parameter on `Replayd.__init__` and thread it through to `_grade_semantic`.
-
----
-
-### 2. README Python version badge is wrong
-
-**File:** `README.md`, line 2
-
-```markdown
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue)]
-```
-
-**File:** `pyproject.toml`, line 11
-
-```toml
-requires-python = ">=3.10"
-```
-
-The `str | None` union syntax used throughout the codebase requires Python 3.10+. The README badge falsely advertises 3.8+ compatibility.
-
-**Fix:** Change the badge to `python-3.10%2B`.
-
----
-
-### 3. Grading is by tool name only, not arguments
-
-The forbidden-action check passes or fails based on whether a tool name appears in the tool-call trace. It does not inspect the arguments. This means:
-
-```python
-run_ctx.record_tool_call("approve_request", {"amount": 50}, ...)    # safe
-run_ctx.record_tool_call("approve_request", {"amount": 50000}, ...) # dangerous
-```
-
-Both produce the same `FAIL` verdict when `approve_request` is in `forbidden_actions`, which is correct. But there is no way to write a structural test that says "fail only if `approve_request` is called with `amount > 500`" without reaching for the LLM judge.
-
-**Fix:** Add `forbidden_call_args: dict | None` to `save_test` for optional argument-level assertions.
-
----
-
-### 4. Silent `output=None` on capture exit
-
-**File:** `replayd/capture.py`, line 89
-
-```python
-def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
-    run = self._run_ctx._to_captured_run()
-    self._on_exit(run)
-    return False
-```
-
-If a developer forgets to assign `run.output` inside the `with` block, the run is saved with `output: null` silently. There is no warning. This is a common first-developer-experience mistake.
-
-**Fix:** Emit a `warnings.warn` when `output is None` on `__exit__` (but do not raise — the run is still worth saving).
-
----
-
-### 5. Structural grading stops at first forbidden action
-
-**File:** `replayd/grader.py`, lines 57–63
-
-```python
-for forbidden in test.forbidden_actions:
-    if forbidden in called_names:
-        return GradeResult(
-            verdict=ReplayVerdict.FAIL,
-            reason=f"Forbidden action '{forbidden}' was called during replay.",
-        )
-```
-
-If multiple forbidden tools fire in one replay, only the first one is reported. A developer debugging the agent has to fix one issue, re-run, and discover the next.
-
-**Fix:** Collect all violations, return them all in the `reason` string.
-
----
-
-### 6. `replay_one` is public but has no example or docstring
-
-**File:** `replayd/core.py`, line 129
-
-`replay_one` is part of the public API but has no usage example in the README or docstring. Developers who want to replay a single known test ID will not find it.
-
-**Fix:** Add a one-liner example to the `replay_one` docstring.
-
----
-
-## SDK improvements before public demo
-
-Ranked by impact:
-
-| Priority | Issue | Effort |
-|----------|-------|--------|
-| **High** | README Python version badge says 3.8+, should be 3.10+ | Trivial — one-line change |
-| **High** | Grading model is hardcoded — callers cannot override it | Small — add `grader_model` param to `Replayd.__init__` |
-| **Medium** | Silent `output=None` capture — common developer mistake | Small — add `warnings.warn` in `CaptureContext.__exit__` |
-| **Medium** | All structural violations reported, not just first | Small — collect all violations before returning |
-| **Low** | Argument-level grading for forbidden actions | Medium — add `forbidden_call_args` to `save_test` |
-| **Low** | `replay_one` needs a docstring example | Trivial |
 
 ---
 
