@@ -7,6 +7,7 @@
   <a href="https://pypi.org/project/replayd/"><img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"></a>
   <a href="https://github.com/TaimoorKhan10/replayd/graphs/contributors"><img src="https://img.shields.io/github/contributors/TaimoorKhan10/replayd?color=3D7A5C" alt="Contributors"></a>
+  <a href="https://github.com/TaimoorKhan10/replayd/actions/workflows/tests.yml"><img src="https://github.com/TaimoorKhan10/replayd/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
   <a href="https://github.com/TaimoorKhan10/replayd/stargazers"><img src="https://img.shields.io/github/stars/TaimoorKhan10/replayd?style=social" alt="Stars"></a>
 </p>
 
@@ -92,6 +93,10 @@ for r in results:
 
 ## See it working
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/TaimoorKhan10/replayd/main/assets/demo.svg" alt="replayd terminal demo" width="860">
+</p>
+
 Run the included example (`python examples/basic_example.py`) and you get:
 
 ```
@@ -144,6 +149,8 @@ Three production-grade example agents are included. Run any of them with no API 
 | `examples/multi_step_planning_agent.py` | Finalizing a plan without first calling `check_constraints` (budget, deadline, dependencies) |
 | `examples/rag_policy_agent.py` | Approving a refund based on a deprecated policy chunk it should have ignored |
 | `examples/incident_response_agent.py` | Running `rollback_deploy` without first paging a human via `escalate_to_human` |
+| `examples/langchain_tool_agent.py` | Issuing a full refund on a partial defect — LangChain tool-calling integration pattern |
+| `examples/openai_agents_sdk_example.py` | Approving a high-risk merge without running a security scan — OpenAI Agents SDK pattern |
 
 Run them:
 

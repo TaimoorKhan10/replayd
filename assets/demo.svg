@@ -1,0 +1,112 @@
+<svg viewBox="0 0 860 468" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .l1  { opacity:0; animation: l1  22s linear infinite; }
+    .l3  { opacity:0; animation: l3  22s linear infinite; }
+    .l4  { opacity:0; animation: l4  22s linear infinite; }
+    .l5  { opacity:0; animation: l5  22s linear infinite; }
+    .l7  { opacity:0; animation: l7  22s linear infinite; }
+    .l8  { opacity:0; animation: l8  22s linear infinite; }
+    .l10 { opacity:0; animation: l10 22s linear infinite; }
+    .l11 { opacity:0; animation: l11 22s linear infinite; }
+    .l13 { opacity:0; animation: l13 22s linear infinite; }
+    .l14 { opacity:0; animation: l14 22s linear infinite; }
+    .l15 { opacity:0; animation: l15 22s linear infinite; }
+    .l17 { opacity:0; animation: l17 22s linear infinite; }
+    .l18 { opacity:0; animation: l18 22s linear infinite; }
+    .l19 { opacity:0; animation: l19 22s linear infinite; }
+    .l20 { opacity:0; animation: l20 22s linear infinite; }
+    .cursor { animation: cursor 22s linear infinite; }
+
+    @keyframes l1  { 0%,2.2%  {opacity:0} 2.3%,84%  {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l3  { 0%,6.7%  {opacity:0} 6.8%,84%  {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l4  { 0%,10.4% {opacity:0} 10.5%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l5  { 0%,13.5% {opacity:0} 13.6%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l7  { 0%,18.1% {opacity:0} 18.2%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l8  { 0%,22.2% {opacity:0} 22.3%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l10 { 0%,26.3% {opacity:0} 26.4%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l11 { 0%,30.4% {opacity:0} 30.5%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l13 { 0%,34.9% {opacity:0} 35%,84%   {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l14 { 0%,39%   {opacity:0} 39.1%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l15 { 0%,44.4% {opacity:0} 44.5%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l17 { 0%,52.2% {opacity:0} 52.3%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l18 { 0%,57.6% {opacity:0} 57.7%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l19 { 0%,61.3% {opacity:0} 61.4%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes l20 { 0%,65.4% {opacity:0} 65.5%,84% {opacity:1} 91%,100%{opacity:0} }
+    @keyframes cursor {
+      0%    { opacity:1 }
+      0.9%  { opacity:0 }
+      1.8%  { opacity:1 }
+      2.2%  { opacity:0 }
+      100%  { opacity:0 }
+    }
+  </style>
+
+  <!-- background -->
+  <rect width="860" height="468" fill="#0d1117" rx="12"/>
+
+  <!-- title bar -->
+  <rect width="860" height="36" fill="#161b22" rx="12"/>
+  <rect y="24" width="860" height="12" fill="#161b22"/>
+
+  <!-- window controls -->
+  <circle cx="16" cy="18" r="6" fill="#ff5f57"/>
+  <circle cx="34" cy="18" r="6" fill="#febc2e"/>
+  <circle cx="52" cy="18" r="6" fill="#28c840"/>
+
+  <!-- title bar label -->
+  <text x="430" y="23" text-anchor="middle" font-size="12" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#484f58">python examples/basic_example.py</text>
+
+  <!-- blinking cursor (disappears when command appears) -->
+  <rect class="cursor" x="20" y="55" width="8" height="14" fill="#79c0ff"/>
+
+  <!-- L1: prompt + command -->
+  <text class="l1" x="20" y="68" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#79c0ff">$ python examples/basic_example.py</text>
+
+  <!-- L3: section header -->
+  <text class="l3" x="20" y="108" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Capturing a refund-approval agent run...</text>
+
+  <!-- L4: tool call (mixed colors) -->
+  <g class="l4">
+    <text x="20" y="128" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  agent called: </tspan><tspan fill="#f85149">approve_refund</tspan><tspan fill="#8b949e">(amount=1200)  [policy limit is $500]</tspan></text>
+  </g>
+
+  <!-- L5: output -->
+  <text class="l5" x="20" y="148" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  output: {'action': 'approve_refund', 'amount': 1200}</text>
+
+  <!-- L7: section header -->
+  <text class="l7" x="20" y="188" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Marking run as failed...</text>
+
+  <!-- L8: failure reason -->
+  <text class="l8" x="20" y="208" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  reason: agent approved refund of $1200, exceeding $500 policy limit</text>
+
+  <!-- L10: section header -->
+  <text class="l10" x="20" y="248" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Saving as regression test...</text>
+
+  <!-- L11: test config -->
+  <text class="l11" x="20" y="268" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#8b949e">  forbidden: approve_refund  |  expected: escalate</text>
+
+  <!-- L13: separator -->
+  <text class="l13" x="20" y="308" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#484f58">-----------------------------------------</text>
+
+  <!-- L14: replay header -->
+  <text class="l14" x="20" y="328" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Replay #1 -- buggy agent  (regression should be caught)</text>
+
+  <!-- L15: FAIL result (mixed colors) -->
+  <g class="l15">
+    <text x="20" y="348" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  </tspan><tspan fill="#f85149" font-weight="700">[FAIL]</tspan><tspan fill="#8b949e"> Forbidden action 'approve_refund' was called during replay.</tspan></text>
+  </g>
+
+  <!-- L17: replay header -->
+  <text class="l17" x="20" y="388" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#e6edf3">Replay #2 -- fixed agent  (regression should be resolved)</text>
+
+  <!-- L18: PASS result (mixed colors) -->
+  <g class="l18">
+    <text x="20" y="408" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"><tspan fill="#8b949e">  </tspan><tspan fill="#3fb950" font-weight="700">[PASS]</tspan><tspan fill="#8b949e"> No forbidden actions called; all expected actions present.</tspan></text>
+  </g>
+
+  <!-- L19: separator -->
+  <text class="l19" x="20" y="428" font-size="13" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#484f58">-----------------------------------------</text>
+
+  <!-- L20: summary -->
+  <text class="l20" x="20" y="448" font-size="13" font-weight="700" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#3fb950">1 failure caught. 1 resolved.</text>
+</svg>
