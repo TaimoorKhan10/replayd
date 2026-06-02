@@ -35,6 +35,7 @@
 - [How replayd compares](#how-replayd-compares)
 - [Example agents](#example-agents)
 - [Recording tool calls](#recording-tool-calls)
+- [Auto-instrumentation limitations](#auto-instrumentation-limitations)
 - [Grading](#grading)
 - [Storage](#storage)
 - [CI integration](#ci-integration)
@@ -290,7 +291,45 @@ Pass this two-argument callable to `replay_all`:
 results = rp.replay_all(agent=my_agent)
 ```
 
----
+### Turning instrumentation off
+
+```python
+rp.uninstrument_openai(client)
+rp.uninstrument_anthropic(client)
+```
+
+Both calls are idempotent. After them the client is exactly as it was before `instrument_*` was called. Useful in test teardown to avoid cross-test pollution.
+
+## Auto-instrumentation limitations
+
+The instrumentation covers the standard synchronous, non-streaming agentic loop. It does not cover the following cases — use `record_tool_call()` manually for these.
+
+**Streaming (`stream=True`) — not supported**
+
+When `stream=True` is passed, the response is a generator of delta chunks. The wrapper reads the non-streaming response shape and records nothing. No error is raised. Fall back to `record_tool_call()` or do not pass `stream=True` on calls inside a capture block.
+
+**Async clients (`AsyncOpenAI`, `AsyncAnthropic`) — not supported**
+
+The wrapper is synchronous. `AsyncOpenAI` and `AsyncAnthropic` are not patched. Calling `instrument_openai` on an async client has no effect on the async `create` coroutine. Use `record_tool_call()` manually in async agents.
+
+**Final tool call with no follow-up model call**
+
+Tool calls are recorded when the result arrives back in the next API request as a `role: "tool"` message. In the standard loop (model requests tool → you execute it → you send result back → model gives final answer), every call is captured. If your agent executes the last tool, uses the result in application code, and never sends it back to the model, that call is not recorded. Use `record_tool_call()` for it explicitly.
+
+The pattern that works without any manual work:
+
+```python
+# fully covered — every tool call is recorded automatically
+while True:
+    response = client.chat.completions.create(messages=messages, tools=tools)
+    msg = response.choices[0].message
+    if msg.tool_calls:
+        for tc in msg.tool_calls:
+            result = execute_tool(tc.function.name, tc.function.arguments)
+            messages.append({"role": "tool", "tool_call_id": tc.id, "content": str(result)})
+    else:
+        break  # final answer — run.output = msg.content
+```
 
 ## Grading
 

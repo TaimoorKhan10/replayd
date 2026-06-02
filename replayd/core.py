@@ -228,10 +228,28 @@ class Replayd:
                 run.output = run_my_agent(client, ...)
             # tool calls are recorded — no record_tool_call() needed
 
+        Covers synchronous, non-streaming usage only. See README
+        "Auto-instrumentation limitations" for streaming and async.
         Idempotent — safe to call multiple times on the same client.
         """
         from replayd.instrumentation import patch_anthropic_client
         patch_anthropic_client(client)
+
+    def uninstrument_openai(self, client) -> None:
+        """
+        Restore client.chat.completions.create to its original method,
+        removing the replayd wrapper. Idempotent.
+        """
+        from replayd.instrumentation import unpatch_openai_client
+        unpatch_openai_client(client)
+
+    def uninstrument_anthropic(self, client) -> None:
+        """
+        Restore client.messages.create to its original method,
+        removing the replayd wrapper. Idempotent.
+        """
+        from replayd.instrumentation import unpatch_anthropic_client
+        unpatch_anthropic_client(client)
 
     # ------------------------------------------------------------------
     # Convenience accessors

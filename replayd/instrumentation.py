@@ -40,9 +40,14 @@ def patch_openai_client(client: Any) -> None:
     """
     Wrap client.chat.completions.create to auto-record tool calls.
 
-    Idempotent — calling twice on the same client has no effect. Reversible —
-    the original method is captured in the closure; set
-    completions.create = completions._replayd_original_create to undo.
+    Covers the synchronous, non-streaming OpenAI client only.
+    Limitations:
+      - stream=True is not supported — pass-through, nothing recorded.
+      - AsyncOpenAI is not patched — use record_tool_call() for async agents.
+    See README "Auto-instrumentation limitations" for the full picture.
+
+    Idempotent — calling twice on the same client has no effect.
+    Reversible via unpatch_openai_client().
     """
     completions = client.chat.completions
     if getattr(completions, _OPENAI_PATCHED, False):
@@ -95,7 +100,14 @@ def patch_anthropic_client(client: Any) -> None:
     """
     Wrap client.messages.create to auto-record tool calls.
 
+    Covers the synchronous, non-streaming Anthropic client only.
+    Limitations:
+      - stream=True / with_streaming_response is not supported.
+      - AsyncAnthropic is not patched — use record_tool_call() for async agents.
+    See README "Auto-instrumentation limitations" for the full picture.
+
     Idempotent — calling twice on the same client has no effect.
+    Reversible via unpatch_anthropic_client().
     """
     messages_api = client.messages
     if getattr(messages_api, _ANTHROPIC_PATCHED, False):
@@ -138,3 +150,37 @@ def patch_anthropic_client(client: Any) -> None:
     messages_api.create = _patched_create
     messages_api._replayd_original_create = original_create
     setattr(messages_api, _ANTHROPIC_PATCHED, True)
+
+
+def unpatch_openai_client(client: Any) -> None:
+    """
+    Restore client.chat.completions.create to its original method.
+
+    Idempotent — safe to call on an already-unpatched client.
+    """
+    completions = client.chat.completions
+    if not getattr(completions, _OPENAI_PATCHED, False):
+        return
+    completions.create = completions._replayd_original_create
+    try:
+        delattr(completions, "_replayd_original_create")
+    except AttributeError:
+        pass
+    setattr(completions, _OPENAI_PATCHED, False)
+
+
+def unpatch_anthropic_client(client: Any) -> None:
+    """
+    Restore client.messages.create to its original method.
+
+    Idempotent — safe to call on an already-unpatched client.
+    """
+    messages_api = client.messages
+    if not getattr(messages_api, _ANTHROPIC_PATCHED, False):
+        return
+    messages_api.create = messages_api._replayd_original_create
+    try:
+        delattr(messages_api, "_replayd_original_create")
+    except AttributeError:
+        pass
+    setattr(messages_api, _ANTHROPIC_PATCHED, False)

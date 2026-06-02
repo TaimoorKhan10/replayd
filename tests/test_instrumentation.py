@@ -322,3 +322,129 @@ def test_manual_and_auto_can_coexist(tmp_path):
     names = [tc.name for tc in saved.tool_calls]
     assert "auto_tool" in names
     assert "manual_tool" in names
+
+
+# ---------------------------------------------------------------------------
+# uninstrument
+# ---------------------------------------------------------------------------
+
+def test_uninstrument_openai_restores_original(tmp_path):
+    """After uninstrument, the original create is back and nothing is recorded."""
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+    call_log = []
+
+    def mock_create(**kwargs):
+        call_log.append("called")
+        return _openai_response()
+
+    client = _make_openai_client(mock_create)
+    rp.instrument_openai(client)
+    rp.uninstrument_openai(client)
+
+    # After uninstrument, calling create inside a capture should record nothing
+    with rp.capture(input="x") as run:
+        client.chat.completions.create(messages=[])
+        run.output = "ok"
+
+    saved = rp.get_run(run.id)
+    assert len(saved.tool_calls) == 0
+    assert len(call_log) == 1  # original still called
+
+
+def test_uninstrument_openai_is_idempotent(tmp_path):
+    """Calling uninstrument twice on the same client does not raise."""
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+
+    def mock_create(**kwargs):
+        return _openai_response()
+
+    client = _make_openai_client(mock_create)
+    rp.instrument_openai(client)
+    rp.uninstrument_openai(client)
+    rp.uninstrument_openai(client)  # should not raise
+
+
+def test_uninstrument_anthropic_restores_original(tmp_path):
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+    call_log = []
+
+    def mock_create(**kwargs):
+        call_log.append("called")
+        return _anthropic_response()
+
+    client = _make_anthropic_client(mock_create)
+    rp.instrument_anthropic(client)
+    rp.uninstrument_anthropic(client)
+
+    with rp.capture(input="x") as run:
+        client.messages.create(messages=[])
+        run.output = "ok"
+
+    saved = rp.get_run(run.id)
+    assert len(saved.tool_calls) == 0
+    assert len(call_log) == 1
+
+
+def test_reinstrument_after_uninstrument_works(tmp_path):
+    """Patch → unpatch → patch again should work correctly."""
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+    step = [0]
+
+    def mock_create(**kwargs):
+        step[0] += 1
+        if step[0] % 2 == 1:
+            return _openai_response(tool_calls=[{"name": "re_tool", "arguments": {}}])
+        return _openai_response()
+
+    client = _make_openai_client(mock_create)
+    rp.instrument_openai(client)
+    rp.uninstrument_openai(client)
+    rp.instrument_openai(client)  # re-instrument
+
+    step[0] = 0
+    with rp.capture(input="x") as run:
+        msgs = [{"role": "user", "content": "x"}]
+        client.chat.completions.create(messages=msgs)
+        msgs.append({"role": "tool", "tool_call_id": "call_0", "content": "res"})
+        client.chat.completions.create(messages=msgs)
+        run.output = "done"
+
+    saved = rp.get_run(run.id)
+    assert len(saved.tool_calls) == 1
+    assert saved.tool_calls[0].name == "re_tool"
+
+
+# ---------------------------------------------------------------------------
+# Streaming: confirmed no-op (documented limitation)
+# ---------------------------------------------------------------------------
+
+def test_openai_streaming_is_silent_noop(tmp_path):
+    """
+    When stream=True is passed, the wrapper returns the stream object
+    unchanged and records nothing. This is a documented limitation — not
+    a crash, not a partial record, just a silent pass-through.
+    """
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+
+    # Simulate the kind of object a streaming call returns: iterable chunks,
+    # no .choices[0].message attribute on the stream itself.
+    class FakeStream:
+        def __iter__(self):
+            yield SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="hi"))])
+
+    def mock_create(**kwargs):
+        return FakeStream()
+
+    client = _make_openai_client(mock_create)
+    rp.instrument_openai(client)
+
+    with rp.capture(input="x") as run:
+        stream = client.chat.completions.create(messages=[], stream=True)
+        # consume the stream as normal code would
+        for _ in stream:
+            pass
+        run.output = "done"
+
+    saved = rp.get_run(run.id)
+    # No tool calls recorded — correct documented behaviour, not an error
+    assert len(saved.tool_calls) == 0
