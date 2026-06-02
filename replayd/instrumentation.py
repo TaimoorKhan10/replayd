@@ -6,6 +6,13 @@ before entering any capture block. After that, use the client normally.
 Tool calls the model requests during an active capture block are recorded
 automatically — no manual record_tool_call() calls needed.
 
+Supported clients
+-----------------
+  - OpenAI (sync)      openai.OpenAI()
+  - OpenAI (async)     openai.AsyncOpenAI()
+  - Anthropic (sync)   anthropic.Anthropic()
+  - Anthropic (async)  anthropic.AsyncAnthropic()
+
 How it works
 ------------
 The OpenAI and Anthropic APIs follow a two-step tool-call pattern:
@@ -19,16 +26,21 @@ The instrumented create() wrapper intercepts both steps:
     records the complete ToolCall (name, arguments, result) into the active
     RunContext.
 
+ContextVar propagation means async wrappers work correctly: a ContextVar
+value set before an `await` is visible inside the awaited coroutine when
+it runs in the same asyncio task. Concurrent tasks each have their own value.
+
 If there is no active capture block (_active_run_ctx is None) the wrapper is
 a transparent pass-through — nothing is recorded and nothing crashes.
 
 Limitations
 -----------
-  - stream=True: the wrapper detects this and emits a warnings.warn() inside
-    an active capture block. Tool calls are not recorded from streamed responses.
-    Use run_ctx.record_tool_call() manually, or disable streaming for captured runs.
-  - Async clients: patch_openai_client detects async create() and emits a warning.
-    Use run_ctx.record_tool_call() manually for async agents.
+  - stream=True: the wrapper emits a warnings.warn() inside an active capture
+    block. Tool calls are not recorded from streamed responses. Use
+    run_ctx.record_tool_call() manually, or disable streaming for captured runs.
+  - Async replay: replay_all() calls agents synchronously. Async agents used
+    with replay_all() need a sync wrapper (e.g. asyncio.run(...)). Capture
+    of async agents works without any wrapper.
 """
 
 from __future__ import annotations
@@ -49,16 +61,6 @@ _STREAMING_WARN = (
     "replayd: auto-instrumentation does not record tool calls from streaming responses. "
     "Use run_ctx.record_tool_call() to record them manually, "
     "or disable streaming for captured runs."
-)
-
-_ASYNC_OPENAI_WARN = (
-    "replayd: auto-instrumentation does not support async OpenAI clients yet. "
-    "Use run_ctx.record_tool_call() to record tool calls manually."
-)
-
-_ASYNC_ANTHROPIC_WARN = (
-    "replayd: auto-instrumentation does not support async Anthropic clients yet. "
-    "Use run_ctx.record_tool_call() to record tool calls manually."
 )
 
 
@@ -124,9 +126,12 @@ def patch_openai_client(client: Any) -> None:
     """
     Wrap client.chat.completions.create to auto-record tool calls.
 
-    Covers the synchronous, non-streaming OpenAI client only.
-    Calling on an async client emits a warning and does not patch.
-    Calling with stream=True inside a capture block emits a warning.
+    Works with both OpenAI (sync) and AsyncOpenAI (async) clients.
+    Detects which variant is in use via inspect.iscoroutinefunction and
+    installs the appropriate sync or async wrapper automatically.
+
+    Calling with stream=True inside a capture block emits a warning;
+    streaming responses are passed through unchanged.
 
     Idempotent — calling twice on the same client has no effect.
     Reversible via unpatch_openai_client().
@@ -137,29 +142,32 @@ def patch_openai_client(client: Any) -> None:
 
     original_create = completions.create
 
-    # Async clients are not supported yet — warn and leave the client untouched.
     if inspect.iscoroutinefunction(original_create):
-        warnings.warn(_ASYNC_OPENAI_WARN, stacklevel=3)
-        return
-
-    def _patched_create(*args, **kwargs):
-        ctx = _active_run_ctx.get()
-
-        # Streaming is not supported — warn and pass through unchanged.
-        if kwargs.get("stream") and ctx is not None:
-            warnings.warn(_STREAMING_WARN, stacklevel=2)
-            return original_create(*args, **kwargs)
-
-        if ctx is not None:
-            _openai_extract_results(ctx, kwargs)
-
-        response = original_create(*args, **kwargs)
-
-        ctx = _active_run_ctx.get()
-        if ctx is not None:
-            _openai_register_requests(ctx, response)
-
-        return response
+        async def _patched_create(*args, **kwargs):
+            ctx = _active_run_ctx.get()
+            if kwargs.get("stream") and ctx is not None:
+                warnings.warn(_STREAMING_WARN, stacklevel=2)
+                return await original_create(*args, **kwargs)
+            if ctx is not None:
+                _openai_extract_results(ctx, kwargs)
+            response = await original_create(*args, **kwargs)
+            ctx = _active_run_ctx.get()
+            if ctx is not None:
+                _openai_register_requests(ctx, response)
+            return response
+    else:
+        def _patched_create(*args, **kwargs):
+            ctx = _active_run_ctx.get()
+            if kwargs.get("stream") and ctx is not None:
+                warnings.warn(_STREAMING_WARN, stacklevel=2)
+                return original_create(*args, **kwargs)
+            if ctx is not None:
+                _openai_extract_results(ctx, kwargs)
+            response = original_create(*args, **kwargs)
+            ctx = _active_run_ctx.get()
+            if ctx is not None:
+                _openai_register_requests(ctx, response)
+            return response
 
     completions.create = _patched_create
     completions._replayd_original_create = original_create
@@ -190,8 +198,10 @@ def patch_anthropic_client(client: Any) -> None:
     """
     Wrap client.messages.create to auto-record tool calls.
 
-    Covers the synchronous, non-streaming Anthropic client only.
-    Calling on an async client emits a warning and does not patch.
+    Works with both Anthropic (sync) and AsyncAnthropic (async) clients.
+    Detects which variant is in use via inspect.iscoroutinefunction and
+    installs the appropriate sync or async wrapper automatically.
+
     Calling with stream=True inside a capture block emits a warning.
 
     Idempotent — calling twice on the same client has no effect.
@@ -203,29 +213,32 @@ def patch_anthropic_client(client: Any) -> None:
 
     original_create = messages_api.create
 
-    # Async clients are not supported yet — warn and leave the client untouched.
     if inspect.iscoroutinefunction(original_create):
-        warnings.warn(_ASYNC_ANTHROPIC_WARN, stacklevel=3)
-        return
-
-    def _patched_create(*args, **kwargs):
-        ctx = _active_run_ctx.get()
-
-        # Streaming is not supported — warn and pass through unchanged.
-        if kwargs.get("stream") and ctx is not None:
-            warnings.warn(_STREAMING_WARN, stacklevel=2)
-            return original_create(*args, **kwargs)
-
-        if ctx is not None:
-            _anthropic_extract_results(ctx, kwargs)
-
-        response = original_create(*args, **kwargs)
-
-        ctx = _active_run_ctx.get()
-        if ctx is not None:
-            _anthropic_register_requests(ctx, response)
-
-        return response
+        async def _patched_create(*args, **kwargs):
+            ctx = _active_run_ctx.get()
+            if kwargs.get("stream") and ctx is not None:
+                warnings.warn(_STREAMING_WARN, stacklevel=2)
+                return await original_create(*args, **kwargs)
+            if ctx is not None:
+                _anthropic_extract_results(ctx, kwargs)
+            response = await original_create(*args, **kwargs)
+            ctx = _active_run_ctx.get()
+            if ctx is not None:
+                _anthropic_register_requests(ctx, response)
+            return response
+    else:
+        def _patched_create(*args, **kwargs):
+            ctx = _active_run_ctx.get()
+            if kwargs.get("stream") and ctx is not None:
+                warnings.warn(_STREAMING_WARN, stacklevel=2)
+                return original_create(*args, **kwargs)
+            if ctx is not None:
+                _anthropic_extract_results(ctx, kwargs)
+            response = original_create(*args, **kwargs)
+            ctx = _active_run_ctx.get()
+            if ctx is not None:
+                _anthropic_register_requests(ctx, response)
+            return response
 
     messages_api.create = _patched_create
     messages_api._replayd_original_create = original_create

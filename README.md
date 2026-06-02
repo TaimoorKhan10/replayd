@@ -302,24 +302,43 @@ Both calls are idempotent. After them the client is exactly as it was before `in
 
 ## Auto-instrumentation limitations
 
-The instrumentation covers the standard synchronous, non-streaming agentic loop. It does not cover the following cases — use `record_tool_call()` manually for these.
+**What is covered**
+
+| Client | Capture | Replay via `replay_all` |
+|---|---|---|
+| `OpenAI` (sync) | ✅ | ✅ |
+| `AsyncOpenAI` | ✅ | use sync wrapper¹ |
+| `Anthropic` (sync) | ✅ | ✅ |
+| `AsyncAnthropic` | ✅ | use sync wrapper¹ |
+| Streaming (`stream=True`) | ❌ warn + fallback | ❌ warn + fallback |
+
+¹ `replay_all` calls agents synchronously. Wrap async agents with `asyncio.run()` for replay:
+
+```python
+import asyncio
+
+def sync_wrapper(input, run_ctx):
+    return asyncio.run(my_async_agent(input, run_ctx))
+
+results = rp.replay_all(agent=sync_wrapper)
+```
 
 **Streaming (`stream=True`) — not supported**
 
-When `stream=True` is passed, the response is a generator of delta chunks. The wrapper reads the non-streaming response shape and records nothing. No error is raised. Fall back to `record_tool_call()` or do not pass `stream=True` on calls inside a capture block.
+When `stream=True` is passed inside an active capture block, the wrapper emits a `warnings.warn()` and passes through unchanged — tool calls are not recorded. Disable streaming for captured runs, or record manually:
 
-**Async clients (`AsyncOpenAI`, `AsyncAnthropic`) — not supported**
-
-The wrapper is synchronous. `AsyncOpenAI` and `AsyncAnthropic` are not patched. Calling `instrument_openai` on an async client has no effect on the async `create` coroutine. Use `record_tool_call()` manually in async agents.
+```python
+run_ctx.record_tool_call("tool_name", arguments, result)
+```
 
 **Final tool call with no follow-up model call**
 
-Tool calls are recorded when the result arrives back in the next API request as a `role: "tool"` message. In the standard loop (model requests tool → you execute it → you send result back → model gives final answer), every call is captured. If your agent executes the last tool, uses the result in application code, and never sends it back to the model, that call is not recorded. Use `record_tool_call()` for it explicitly.
+Tool calls are recorded when the result arrives back as a `role: "tool"` message in the next API call. If your agent executes the last tool, uses the result in Python code, and never sends it back to the model, that call is not recorded. Use `record_tool_call()` for it explicitly.
 
-The pattern that works without any manual work:
+The pattern that is fully covered without any manual work:
 
 ```python
-# fully covered — every tool call is recorded automatically
+# sync or async — both work
 while True:
     response = client.chat.completions.create(messages=messages, tools=tools)
     msg = response.choices[0].message
@@ -328,7 +347,7 @@ while True:
             result = execute_tool(tc.function.name, tc.function.arguments)
             messages.append({"role": "tool", "tool_call_id": tc.id, "content": str(result)})
     else:
-        break  # final answer — run.output = msg.content
+        break  # final answer
 ```
 
 ## Grading
