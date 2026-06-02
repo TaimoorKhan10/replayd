@@ -415,36 +415,118 @@ def test_reinstrument_after_uninstrument_works(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Streaming: confirmed no-op (documented limitation)
+# Streaming: warns inside a capture block, silent pass-through outside
 # ---------------------------------------------------------------------------
 
-def test_openai_streaming_is_silent_noop(tmp_path):
-    """
-    When stream=True is passed, the wrapper returns the stream object
-    unchanged and records nothing. This is a documented limitation — not
-    a crash, not a partial record, just a silent pass-through.
-    """
+class _FakeStream:
+    """Minimal stand-in for a streamed OpenAI response."""
+    def __iter__(self):
+        yield SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="hi"))])
+
+
+def test_openai_streaming_warns_inside_capture(tmp_path):
+    """stream=True inside a capture block emits a warning."""
     rp = Replayd(storage_dir=tmp_path / ".replayd")
 
-    # Simulate the kind of object a streaming call returns: iterable chunks,
-    # no .choices[0].message attribute on the stream itself.
-    class FakeStream:
-        def __iter__(self):
-            yield SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="hi"))])
-
     def mock_create(**kwargs):
-        return FakeStream()
+        return _FakeStream()
 
     client = _make_openai_client(mock_create)
     rp.instrument_openai(client)
 
+    import warnings as _warnings
     with rp.capture(input="x") as run:
-        stream = client.chat.completions.create(messages=[], stream=True)
-        # consume the stream as normal code would
-        for _ in stream:
-            pass
+        with _warnings.catch_warnings(record=True) as w:
+            _warnings.simplefilter("always")
+            stream = client.chat.completions.create(messages=[], stream=True)
+            for _ in stream:
+                pass
         run.output = "done"
 
-    saved = rp.get_run(run.id)
-    # No tool calls recorded — correct documented behaviour, not an error
-    assert len(saved.tool_calls) == 0
+    assert len(w) == 1
+    assert "streaming" in str(w[0].message).lower()
+    assert "record_tool_call" in str(w[0].message)
+
+
+def test_openai_streaming_no_warn_outside_capture(tmp_path):
+    """stream=True outside a capture block is a silent pass-through — no warning."""
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+
+    def mock_create(**kwargs):
+        return _FakeStream()
+
+    client = _make_openai_client(mock_create)
+    rp.instrument_openai(client)
+
+    import warnings as _warnings
+    with _warnings.catch_warnings(record=True) as w:
+        _warnings.simplefilter("always")
+        stream = client.chat.completions.create(messages=[], stream=True)
+        for _ in stream:
+            pass
+
+    assert len(w) == 0
+
+
+def test_anthropic_streaming_warns_inside_capture(tmp_path):
+    """Anthropic: stream=True inside a capture block emits a warning."""
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+
+    def mock_create(**kwargs):
+        return SimpleNamespace(content=[])
+
+    client = _make_anthropic_client(mock_create)
+    rp.instrument_anthropic(client)
+
+    import warnings as _warnings
+    with rp.capture(input="x") as run:
+        with _warnings.catch_warnings(record=True) as w:
+            _warnings.simplefilter("always")
+            client.messages.create(messages=[], stream=True)
+        run.output = "done"
+
+    assert len(w) == 1
+    assert "streaming" in str(w[0].message).lower()
+
+
+# ---------------------------------------------------------------------------
+# Async client: warns and does not patch (item 1 — no async support yet)
+# ---------------------------------------------------------------------------
+
+def test_instrument_openai_async_client_warns(tmp_path):
+    """instrument_openai on an async client emits a warning and leaves it unpatched."""
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+
+    async def async_create(**kwargs):
+        return _openai_response()
+
+    client = _make_openai_client(async_create)
+
+    import warnings as _warnings
+    with _warnings.catch_warnings(record=True) as w:
+        _warnings.simplefilter("always")
+        rp.instrument_openai(client)
+
+    assert len(w) == 1
+    assert "async" in str(w[0].message).lower()
+    # Client must be unpatched — original create is still the async function
+    assert client.chat.completions.create is async_create
+
+
+def test_instrument_anthropic_async_client_warns(tmp_path):
+    """instrument_anthropic on an async client emits a warning and leaves it unpatched."""
+    rp = Replayd(storage_dir=tmp_path / ".replayd")
+
+    async def async_create(**kwargs):
+        return _anthropic_response()
+
+    client = _make_anthropic_client(async_create)
+
+    import warnings as _warnings
+    with _warnings.catch_warnings(record=True) as w:
+        _warnings.simplefilter("always")
+        rp.instrument_anthropic(client)
+
+    assert len(w) == 1
+    assert "async" in str(w[0].message).lower()
+    assert client.messages.create is async_create
