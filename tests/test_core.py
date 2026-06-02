@@ -322,3 +322,143 @@ def test_replay_one_by_test_id(tmp_path):
 
     result2 = rp.replay_one(test.id, agent=mock_agent_good)
     assert result2.verdict == ReplayVerdict.PASS
+
+
+# --- deeper grading (v0.1.3) -----------------------------------------------
+
+def test_expected_action_wrong_args_fails(tmp_path):
+    """expected_action called with wrong argument value → FAIL."""
+    rp = make_rp(tmp_path)
+
+    def agent_wrong_channel(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("notify", {"channel": "email"}, None)
+        return "done"
+
+    with rp.capture(input={}) as run:
+        run.output = agent_wrong_channel({}, run)
+    rp.mark_failed(run.id, reason="wrong channel")
+    rp.save_test(
+        run.id,
+        expected_action="notify",
+        expected_action_args={"channel": "sms"},
+    )
+
+    results = rp.replay_all(agent=agent_wrong_channel)
+    assert results[0].verdict == ReplayVerdict.FAIL
+    assert "notify" in results[0].reason
+    assert "required arguments" in results[0].reason
+
+
+def test_expected_action_correct_args_passes(tmp_path):
+    """expected_action called with matching args → PASS."""
+    rp = make_rp(tmp_path)
+
+    def agent_bad_channel(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("notify", {"channel": "email"}, None)
+        return "done"
+
+    def agent_good_channel(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("notify", {"channel": "sms"}, None)
+        return "done"
+
+    with rp.capture(input={}) as run:
+        run.output = agent_bad_channel({}, run)
+    rp.mark_failed(run.id, reason="wrong channel")
+    rp.save_test(
+        run.id,
+        expected_action="notify",
+        expected_action_args={"channel": "sms"},
+    )
+
+    results = rp.replay_all(agent=agent_good_channel)
+    assert results[0].verdict == ReplayVerdict.PASS
+
+
+def test_required_sequence_correct_order_passes(tmp_path):
+    """Tools called in the required order → PASS."""
+    rp = make_rp(tmp_path)
+
+    def agent_bad(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("finalize", {}, None)
+        return "done"
+
+    def agent_good(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("check", {}, None)
+        run_ctx.record_tool_call("finalize", {}, None)
+        return "done"
+
+    with rp.capture(input={}) as run:
+        run.output = agent_bad({}, run)
+    rp.mark_failed(run.id, reason="skipped check")
+    rp.save_test(run.id, required_sequence=["check", "finalize"])
+
+    results = rp.replay_all(agent=agent_good)
+    assert results[0].verdict == ReplayVerdict.PASS
+
+
+def test_required_sequence_wrong_order_fails(tmp_path):
+    """Tools called in the wrong order → FAIL with 'sequence' in reason."""
+    rp = make_rp(tmp_path)
+
+    def agent_bad(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("finalize", {}, None)
+        return "done"
+
+    def agent_wrong_order(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("finalize", {}, None)
+        run_ctx.record_tool_call("check", {}, None)
+        return "done"
+
+    with rp.capture(input={}) as run:
+        run.output = agent_bad({}, run)
+    rp.mark_failed(run.id, reason="skipped check")
+    rp.save_test(run.id, required_sequence=["check", "finalize"])
+
+    results = rp.replay_all(agent=agent_wrong_order)
+    assert results[0].verdict == ReplayVerdict.FAIL
+    assert "sequence" in results[0].reason.lower()
+
+
+def test_required_sequence_missing_tool_fails(tmp_path):
+    """Tool in required_sequence not called at all → FAIL."""
+    rp = make_rp(tmp_path)
+
+    def agent_bad(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("finalize", {}, None)
+        return "done"
+
+    def agent_skips_check(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("finalize", {}, None)
+        return "done"
+
+    with rp.capture(input={}) as run:
+        run.output = agent_bad({}, run)
+    rp.mark_failed(run.id, reason="skipped check")
+    rp.save_test(run.id, required_sequence=["check", "finalize"])
+
+    results = rp.replay_all(agent=agent_skips_check)
+    assert results[0].verdict == ReplayVerdict.FAIL
+    assert "check" in results[0].reason
+
+
+def test_required_sequence_standalone_criterion(tmp_path):
+    """required_sequence alone (without expected_action) is a valid criterion."""
+    rp = make_rp(tmp_path)
+
+    def agent_bad(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("only_tool", {}, None)
+        return "done"
+
+    with rp.capture(input={}) as run:
+        run.output = agent_bad({}, run)
+    rp.mark_failed(run.id, reason="bad order")
+    # No forbidden_actions or expected_action — just a sequence requirement
+    test = rp.save_test(run.id, required_sequence=["auth", "only_tool"])
+
+    def agent_correct(input, run_ctx: RunContext):
+        run_ctx.record_tool_call("auth", {}, None)
+        run_ctx.record_tool_call("only_tool", {}, None)
+        return "done"
+
+    results = rp.replay_all(agent=agent_correct)
+    assert results[0].verdict == ReplayVerdict.PASS

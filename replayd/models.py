@@ -91,21 +91,30 @@ class TestCase:
     """
     A saved regression test derived from a failed run.
 
-    forbidden_actions:   tool call names that must NOT appear in a replay.
-    expected_action:     tool call name that MUST appear in a replay.
-    grader_prompt:       LLM-as-judge prompt for semantic failures. When set,
-                         the grader uses an LLM to evaluate the replay output
-                         instead of (or alongside) structural assertions.
-    forbidden_call_args: optional dict of argument key/value pairs that must
-                         ALL be present on a tool call for it to count as a
-                         forbidden violation. When None (default), any call to
-                         a forbidden tool name fails — existing behavior.
-                         When provided, only calls whose arguments are a
-                         superset of forbidden_call_args trigger a FAIL.
+    forbidden_actions:    tool call names that must NOT appear in a replay.
+    expected_action:      tool call name that MUST appear in a replay.
+    expected_action_args: optional dict of argument key/value pairs that must
+                          ALL be present on the expected_action call. When
+                          None (default), any call to the expected tool name
+                          satisfies the check.
+    required_sequence:    ordered list of tool names that must appear in that
+                          relative order (not necessarily consecutive). E.g.
+                          ["check_constraints", "finalize_plan"] means
+                          check_constraints must be called before finalize_plan.
+    grader_prompt:        LLM-as-judge prompt for semantic failures. When set,
+                          the grader uses an LLM to evaluate the replay output
+                          instead of (or alongside) structural assertions.
+    forbidden_call_args:  optional dict of argument key/value pairs that must
+                          ALL be present on a tool call for it to count as a
+                          forbidden violation. When None (default), any call to
+                          a forbidden tool name fails.
 
     Example — only fail if 'approve_refund' is called with amount=1200:
         save_test(run_id, forbidden_actions=["approve_refund"],
                   forbidden_call_args={"amount": 1200})
+
+    Example — assert search happens before respond:
+        save_test(run_id, required_sequence=["search_web", "respond"])
     """
 
     id: str
@@ -116,6 +125,8 @@ class TestCase:
     grader_prompt: str | None
     created_at: datetime
     forbidden_call_args: dict | None = None
+    expected_action_args: dict | None = None
+    required_sequence: list[str] | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -124,6 +135,8 @@ class TestCase:
             "failure_reason": self.failure_reason,
             "forbidden_actions": self.forbidden_actions,
             "expected_action": self.expected_action,
+            "expected_action_args": self.expected_action_args,
+            "required_sequence": self.required_sequence,
             "grader_prompt": self.grader_prompt,
             "created_at": self.created_at.isoformat(),
             "forbidden_call_args": self.forbidden_call_args,
@@ -137,6 +150,8 @@ class TestCase:
             failure_reason=d["failure_reason"],
             forbidden_actions=d.get("forbidden_actions", []),
             expected_action=d.get("expected_action"),
+            expected_action_args=d.get("expected_action_args"),
+            required_sequence=d.get("required_sequence"),
             grader_prompt=d.get("grader_prompt"),
             created_at=datetime.fromisoformat(d["created_at"]),
             forbidden_call_args=d.get("forbidden_call_args"),

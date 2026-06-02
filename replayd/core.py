@@ -96,27 +96,40 @@ class Replayd:
         *,
         forbidden_actions: list[str] | None = None,
         expected_action: str | None = None,
+        expected_action_args: dict | None = None,
+        required_sequence: list[str] | None = None,
         grader_prompt: str | None = None,
         forbidden_call_args: dict | None = None,
     ) -> TestCase:
         """
         Convert a failed run into a replayable regression test.
 
-        At least one of forbidden_actions, expected_action, or grader_prompt
-        must be provided so the grader has something to check.
+        At least one grading criterion must be provided.
+
+        forbidden_actions:
+            Tool names that must NOT appear in a replay.
+
+        expected_action:
+            Tool name that MUST appear in a replay.
+
+        expected_action_args:
+            Optional argument constraints for expected_action. At least one
+            call to expected_action must have arguments that are a superset of
+            this dict. Ignored when expected_action is None.
+
+        required_sequence:
+            Ordered list of tool names that must appear in that relative order
+            (first occurrence, not necessarily consecutive). E.g.
+            ["validate", "submit"] enforces validate before submit.
 
         forbidden_call_args:
-            Optional argument-level filter for forbidden_actions. When
-            provided, a forbidden action only triggers a FAIL verdict if it
-            was called with arguments that are a superset of this dict.
-            When None (default), any call to the forbidden tool name fails.
+            Optional argument-level filter for forbidden_actions. A forbidden
+            tool only triggers FAIL when its arguments contain every key/value
+            pair in this dict.
 
-            Example — only catch approve_refund when amount=1200:
-                rp.save_test(
-                    run_id,
-                    forbidden_actions=["approve_refund"],
-                    forbidden_call_args={"amount": 1200},
-                )
+        grader_prompt:
+            LLM-as-judge prompt for policy or reasoning failures. Requires
+            pip install replayd[semantic] and ANTHROPIC_API_KEY.
         """
         run = self._storage.load_run(run_id)
         if run.status != RunStatus.FAILED:
@@ -124,9 +137,10 @@ class Replayd:
                 f"Run {run_id} has not been marked as failed. "
                 "Call mark_failed() before save_test()."
             )
-        if not forbidden_actions and not expected_action and not grader_prompt:
+        if not forbidden_actions and not expected_action and not grader_prompt and not required_sequence:
             raise ValueError(
-                "Provide at least one of: forbidden_actions, expected_action, grader_prompt."
+                "Provide at least one of: forbidden_actions, expected_action, "
+                "required_sequence, grader_prompt."
             )
 
         test = TestCase(
@@ -135,6 +149,8 @@ class Replayd:
             failure_reason=run.failure_reason,
             forbidden_actions=forbidden_actions or [],
             expected_action=expected_action,
+            expected_action_args=expected_action_args,
+            required_sequence=required_sequence,
             grader_prompt=grader_prompt,
             created_at=utcnow(),
             forbidden_call_args=forbidden_call_args,

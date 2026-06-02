@@ -60,8 +60,8 @@ def grade(
 def _grade_structural(test: TestCase, run: CapturedRun) -> GradeResult:
     called_names = {tc.name for tc in run.tool_calls}
 
-    # Collect every forbidden violation before returning so a developer sees
-    # all problems at once instead of fixing one and re-running to find the next.
+    # 1. Forbidden action check — collect all violations so the developer
+    #    sees every problem at once rather than fixing one per run.
     violations: list[str] = []
     for forbidden in test.forbidden_actions:
         matching = [tc for tc in run.tool_calls if tc.name == forbidden]
@@ -85,14 +85,57 @@ def _grade_structural(test: TestCase, run: CapturedRun) -> GradeResult:
             reason = f"Forbidden actions called during replay: {joined}."
         return GradeResult(verdict=ReplayVerdict.FAIL, reason=reason)
 
-    if test.expected_action and test.expected_action not in called_names:
-        return GradeResult(
-            verdict=ReplayVerdict.FAIL,
-            reason=(
-                f"Expected action '{test.expected_action}' was not called during replay. "
-                f"Actions called: {sorted(called_names) or 'none'}."
-            ),
-        )
+    # 2. Expected action check — tool must be called, and if expected_action_args
+    #    is set, at least one call must match all those argument key/value pairs.
+    if test.expected_action:
+        if test.expected_action not in called_names:
+            return GradeResult(
+                verdict=ReplayVerdict.FAIL,
+                reason=(
+                    f"Expected action '{test.expected_action}' was not called during replay. "
+                    f"Actions called: {sorted(called_names) or 'none'}."
+                ),
+            )
+        if test.expected_action_args is not None:
+            arg_matches = [
+                tc for tc in run.tool_calls
+                if tc.name == test.expected_action
+                and all(tc.arguments.get(k) == v for k, v in test.expected_action_args.items())
+            ]
+            if not arg_matches:
+                return GradeResult(
+                    verdict=ReplayVerdict.FAIL,
+                    reason=(
+                        f"Expected action '{test.expected_action}' was called but not with "
+                        f"the required arguments {test.expected_action_args}."
+                    ),
+                )
+
+    # 3. Sequence check — tools must appear in the specified relative order.
+    #    Uses first occurrence of each tool name; they need not be consecutive.
+    if test.required_sequence:
+        first_pos: dict[str, int] = {}
+        for i, tc in enumerate(run.tool_calls):
+            if tc.name in test.required_sequence and tc.name not in first_pos:
+                first_pos[tc.name] = i
+
+        missing = [n for n in test.required_sequence if n not in first_pos]
+        if missing:
+            joined = ", ".join(f"'{n}'" for n in missing)
+            return GradeResult(
+                verdict=ReplayVerdict.FAIL,
+                reason=f"Required sequence: tool(s) {joined} were not called.",
+            )
+
+        for a, b in zip(test.required_sequence, test.required_sequence[1:]):
+            if first_pos[a] >= first_pos[b]:
+                return GradeResult(
+                    verdict=ReplayVerdict.FAIL,
+                    reason=(
+                        f"Required sequence violated: '{a}' must appear before '{b}'. "
+                        f"Call order: {[tc.name for tc in run.tool_calls]}."
+                    ),
+                )
 
     return GradeResult(
         verdict=ReplayVerdict.PASS,
