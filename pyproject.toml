@@ -26,6 +26,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
+[project.scripts]
+replayd = "replayd.cli:main"
+
 [project.optional-dependencies]
 semantic = ["anthropic>=0.40.0"]
 dev = [
