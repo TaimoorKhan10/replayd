@@ -182,6 +182,42 @@ class Replayd:
         return _replay_one(test, agent, self._storage, grader_model=self._grader_model)
 
     # ------------------------------------------------------------------
+    # 5. Instrumentation
+    # ------------------------------------------------------------------
+
+    def instrument_openai(self, client) -> None:
+        """
+        Wrap an OpenAI client so tool calls within a capture block are
+        recorded automatically. Call once per client, before any capture
+        blocks.
+
+            rp.instrument_openai(client)
+            with rp.capture(input=...) as run:
+                run.output = run_my_agent(client, ...)
+            # tool calls are recorded — no record_tool_call() needed
+
+        Idempotent — safe to call multiple times on the same client.
+        """
+        from replayd.instrumentation import patch_openai_client
+        patch_openai_client(client)
+
+    def instrument_anthropic(self, client) -> None:
+        """
+        Wrap an Anthropic client so tool calls within a capture block are
+        recorded automatically. Call once per client, before any capture
+        blocks.
+
+            rp.instrument_anthropic(client)
+            with rp.capture(input=...) as run:
+                run.output = run_my_agent(client, ...)
+            # tool calls are recorded — no record_tool_call() needed
+
+        Idempotent — safe to call multiple times on the same client.
+        """
+        from replayd.instrumentation import patch_anthropic_client
+        patch_anthropic_client(client)
+
+    # ------------------------------------------------------------------
     # Convenience accessors
     # ------------------------------------------------------------------
 

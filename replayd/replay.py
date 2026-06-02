@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from replayd.capture import RunContext
+from replayd.capture import RunContext, _active_run_ctx
 from replayd.grader import grade
 from replayd.models import CapturedRun, ReplayResult, ReplayVerdict, RunStatus, TestCase, new_id, utcnow
 from replayd.storage import Storage
@@ -28,7 +28,13 @@ def _run_agent(agent: AgentCallable, original_run: CapturedRun) -> CapturedRun:
         model=original_run.model,
         prompt_version=original_run.prompt_version,
     )
-    output = agent(original_run.input, run_ctx)
+    # Set the active context so instrumented clients record into this run_ctx
+    # even during replay (not just during rp.capture() blocks).
+    token = _active_run_ctx.set(run_ctx)
+    try:
+        output = agent(original_run.input, run_ctx)
+    finally:
+        _active_run_ctx.reset(token)
     run_ctx.output = output
     return CapturedRun(
         id=new_id(),
