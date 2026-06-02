@@ -230,8 +230,9 @@ Five production-grade example agents are included. Run any of them with no API k
 | `examples/incident_response_agent.py` | Running `rollback_deploy` without first paging a human via `escalate_to_human` |
 | `examples/langchain_tool_agent.py` | Issuing a full refund on a partial defect — LangChain tool-calling integration pattern |
 | `examples/openai_agents_sdk_example.py` | Approving a high-risk merge without running a security scan — OpenAI Agents SDK pattern |
+| `examples/real_openai_agent.py` | Real OpenAI call with auto-instrumentation — requires `OPENAI_API_KEY` |
 
-Run them:
+Run the no-API-key examples:
 
 ```bash
 python examples/multi_step_planning_agent.py
@@ -245,9 +246,35 @@ Each example shows FAIL on the buggy agent and PASS on the fixed agent.
 
 ## Recording tool calls
 
-replayd cannot intercept tool calls automatically. Wrap your agent's tool dispatcher to record them.
+### Auto-instrumentation (recommended)
 
-**The agent you pass to `replay_all` must accept two arguments: `(input, run_ctx)`.**
+Call `rp.instrument_openai(client)` or `rp.instrument_anthropic(client)` once, before entering any capture block. Tool calls are then recorded automatically — no manual wrapping needed.
+
+```python
+from openai import OpenAI
+from replayd import Replayd
+
+rp = Replayd()
+client = OpenAI()
+rp.instrument_openai(client)  # call once
+
+with rp.capture(input=user_query, model="gpt-4o") as run:
+    run.output = your_agent(client, user_query)  # tool calls recorded automatically
+```
+
+Works for Anthropic too:
+
+```python
+import anthropic
+client = anthropic.Anthropic()
+rp.instrument_anthropic(client)
+```
+
+See `examples/real_openai_agent.py` for a complete runnable example.
+
+### Manual recording (framework-agnostic fallback)
+
+If your agent does not use OpenAI or Anthropic directly, wrap your tool dispatcher to record calls manually. **The agent you pass to `replay_all` must accept two arguments: `(input, run_ctx)`.**
 
 ```python
 def my_agent(input, run_ctx):

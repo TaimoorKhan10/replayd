@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "replayd"
-version = "0.1.2"
+version = "0.1.3"
 description = "Turn failed AI agent runs into replayable regression tests"
 readme = "README.md"
 license = { file = "LICENSE" }
