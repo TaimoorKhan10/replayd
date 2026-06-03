@@ -1,58 +1,22 @@
 # Changelog
 
-## v0.1.3 — 2026-06-03
+## [0.1.3] - 2026-06-03
 
-Four new capabilities, all backwards compatible.
+### Added
+- Auto-instrumentation for OpenAI and Anthropic clients (sync and async). Tool calls record automatically inside a capture block after a single `instrument_openai` / `instrument_anthropic` call. Works with `OpenAI`, `AsyncOpenAI`, `Anthropic`, and `AsyncAnthropic`.
+- `uninstrument_openai` and `uninstrument_anthropic` to restore a client to its original state. Idempotent.
+- `replayd run --agent module:fn` CLI for script-free replay; exits 1 on failure for CI.
+- Argument-level assertions (`expected_action_args`) and call-sequence assertions (`required_sequence`) in `save_test`.
+- `examples/real_openai_agent.py` — a real, runnable OpenAI agent example using auto-instrumentation.
 
-**Auto-instrumentation**
+### Changed
+- Recording tool calls is now optional for instrumented OpenAI/Anthropic agents; `record_tool_call()` remains the fallback for any other framework.
 
-- `rp.instrument_openai(client)` — call once before any capture block. The
-  OpenAI client's `chat.completions.create` is wrapped so that tool calls
-  the model requests, and the results returned in subsequent messages, are
-  recorded automatically into the active run context. No `record_tool_call()`
-  calls needed in agent code.
-- `rp.instrument_anthropic(client)` — same for Anthropic `messages.create`.
-  Handles the `tool_use` / `tool_result` message pattern.
-- Works during `replay_all` / `replay_one` as well as during initial capture.
-- Idempotent — calling twice on the same client is safe.
+### Known limitations
+- Streaming responses (`stream=True`) are not auto-recorded; the wrapper warns at call time and points to the manual fallback.
+- Async replay requires wrapping the agent in `asyncio.run()`; native async `replay_all` is planned for 0.1.4.
 
-**CLI**
-
-- `replayd run --agent module.path:agent_fn` — imports the callable, runs
-  `replay_all` against all tests in `.replayd/tests/`, prints PASS/FAIL per
-  test, exits 0 if all pass, exits 1 if any fail. Ready for CI pipelines.
-- `replayd --version` — prints version and exits 0.
-- Registered as a console entry point in `pyproject.toml`; available as
-  `replayd` after `pip install replayd`.
-
-**Deeper grading**
-
-- `save_test(..., expected_action_args={"key": "val"})` — asserts the expected
-  action was called with arguments that are a superset of this dict. Fails if
-  the action was called with different arguments. Backwards compatible — default
-  is None (existing behaviour unchanged).
-- `save_test(..., required_sequence=["tool_a", "tool_b"])` — asserts that tool
-  calls appear in this relative order (first occurrence; need not be
-  consecutive). Can be used as the sole grading criterion. Fails if any tool is
-  missing or appears in the wrong order.
-
-**Example**
-
-- `examples/real_openai_agent.py` — runnable with a real `OPENAI_API_KEY`.
-  Shows `instrument_openai`, captures a buggy search-skipping agent, saves a
-  test, and replays both buggy and fixed versions. Skips cleanly if no key is
-  set.
-
-**Tests**
-
-- `tests/test_instrumentation.py` — 10 tests covering OpenAI and Anthropic
-  auto-recording, idempotency, no-op outside capture, replay compatibility,
-  and coexistence with manual `record_tool_call()`.
-- `tests/test_cli.py` — 7 tests covering exit codes 0, 1, 2, `--version`,
-  and output content.
-- `tests/test_core.py` — 6 new tests for `expected_action_args` and
-  `required_sequence` grading.
-- Total: 49 tests passing.
+61 tests passing.
 
 ## v0.1.2 — 2026-05-31
 
