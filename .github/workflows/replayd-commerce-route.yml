@@ -13,4 +13,4 @@ jobs:
         with:
           python-version: "3.11"
       - name: Run replayd commerce route check
-        run: python examples/commerce_route/run_replay.py --agent broken
+        run: python examples/commerce_route/run_replay.py --agent fixed
