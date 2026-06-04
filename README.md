@@ -391,7 +391,7 @@ Runs and tests are stored as JSON files in `.replayd/` in your working directory
   tests/<test-id>.json  ← saved regression tests
 ```
 
-No database. No hosted backend. Commit `.replayd/tests/` into version control to share regression tests with your team. Keep `.replayd/runs/` out of git — it is local capture data.
+No database. No hosted backend. Commit `.replayd/tests/` into version control to share regression tests with your team — this gives your team a traceable record of every known agent failure and its expected behavior, an audit trail that grows with every failure your agents encounter in production. Keep `.replayd/runs/` out of git — it is local capture data.
 
 ---
 
@@ -405,7 +405,7 @@ A ready-to-use script is included at `scripts/regression_check.py`. Copy it into
   run: python scripts/regression_check.py
 ```
 
-Any saved regression test that fails exits with code 1, blocking the deploy.
+Any saved regression test that fails exits with code 1, blocking the deploy. This makes replayd a policy enforcement gate in your CI pipeline — any agent behavior that violates a known expectation blocks the release before it reaches users.
 
 ---
 
