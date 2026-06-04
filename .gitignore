@@ -19,6 +19,11 @@ ENV/
 
 # replayd runtime data — never commit captured runs or tests from real agents
 .replayd/
+!examples/commerce_route/.replayd/
+examples/commerce_route/.replayd/*
+!examples/commerce_route/.replayd/tests/
+examples/commerce_route/.replayd/tests/*
+!examples/commerce_route/.replayd/tests/*.json
 
 # Environment variables — never commit secrets
 .env

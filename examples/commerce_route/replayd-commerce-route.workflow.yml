@@ -1,0 +1,16 @@
+name: replayd / commerce route
+
+on:
+  pull_request:
+
+jobs:
+  commerce-route:
+    name: replayd / commerce route
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run replayd commerce route check
+        run: python examples/commerce_route/run_replay.py --agent fixed

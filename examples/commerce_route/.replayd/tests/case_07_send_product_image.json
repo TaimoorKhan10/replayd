@@ -1,0 +1,18 @@
+{
+  "case_id": "commerce_image_request_001",
+  "input": "Can I see a picture?",
+  "expected_route": "send_product_image",
+  "failed_actual_route": "text_only",
+  "failure_reason": "User asked for a product image, but the agent replied with text instead of routing to send_product_image.",
+  "assertions": {
+    "actual_route_must_equal": "send_product_image",
+    "regression_route": "text_only",
+    "fail_when_actual_route_is": "text_only"
+  },
+  "created_from_failed_run": true,
+  "release_gate": {
+    "check_name": "replayd / commerce route",
+    "on_fail": "BLOCK",
+    "on_pass": "PASS"
+  }
+}

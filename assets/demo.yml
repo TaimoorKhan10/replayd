@@ -1,0 +1,144 @@
+config:
+  cols: 82
+  rows: 22
+  frameDelay: auto
+  maxIdleTime: 2000
+  frameBox:
+    type: window
+    title: "replayd \u2014 regression test demo"
+    style: {}
+  fontFamily: "Menlo, Consolas, 'Courier New', monospace"
+  fontSize: 13
+  lineHeight: 1.2
+  theme:
+    background: "#282a36"
+    foreground: "#f8f8f2"
+    cursor: "#f8f8f2"
+    black: "#21222c"
+    red: "#ff5555"
+    green: "#50fa7b"
+    yellow: "#f1fa8c"
+    blue: "#bd93f9"
+    magenta: "#ff79c6"
+    cyan: "#8be9fd"
+    white: "#f8f8f2"
+    brightBlack: "#6272a4"
+    brightRed: "#ff6e6e"
+    brightGreen: "#69ff94"
+    brightYellow: "#ffffa5"
+    brightBlue: "#d6acff"
+    brightMagenta: "#ff92df"
+    brightCyan: "#a4ffff"
+    brightWhite: "#ffffff"
+
+records:
+  - delay: 400
+    content: "\r\n"
+  - delay: 200
+    content: "\u001b[2m~/\u001b[0m "
+  - delay: 75
+    content: "p"
+  - delay: 75
+    content: "y"
+  - delay: 75
+    content: "t"
+  - delay: 75
+    content: "h"
+  - delay: 75
+    content: "o"
+  - delay: 75
+    content: "n"
+  - delay: 75
+    content: " "
+  - delay: 75
+    content: "e"
+  - delay: 75
+    content: "x"
+  - delay: 75
+    content: "a"
+  - delay: 75
+    content: "m"
+  - delay: 75
+    content: "p"
+  - delay: 75
+    content: "l"
+  - delay: 75
+    content: "e"
+  - delay: 75
+    content: "s"
+  - delay: 75
+    content: "/"
+  - delay: 75
+    content: "b"
+  - delay: 75
+    content: "a"
+  - delay: 75
+    content: "s"
+  - delay: 75
+    content: "i"
+  - delay: 75
+    content: "c"
+  - delay: 75
+    content: "_"
+  - delay: 75
+    content: "e"
+  - delay: 75
+    content: "x"
+  - delay: 75
+    content: "a"
+  - delay: 75
+    content: "m"
+  - delay: 75
+    content: "p"
+  - delay: 75
+    content: "l"
+  - delay: 75
+    content: "e"
+  - delay: 75
+    content: "."
+  - delay: 75
+    content: "p"
+  - delay: 75
+    content: "y"
+  - delay: 350
+    content: "\r\n"
+  - delay: 200
+    content: "\u001b[1mCapturing a refund-approval agent run...\u001b[0m\r\n"
+  - delay: 120
+    content: "  agent called: \u001b[96mapprove_refund(amount=1200)\u001b[0m  [policy limit is $500]\r\n"
+  - delay: 120
+    content: "  output: {'action': 'approve_refund', 'amount': 1200}\r\n"
+  - delay: 220
+    content: "\r\n"
+  - delay: 180
+    content: "\u001b[1mMarking run as failed...\u001b[0m\r\n"
+  - delay: 120
+    content: "  reason: \u001b[93magent approved refund of $1200, exceeding $500 policy limit\u001b[0m\r\n"
+  - delay: 220
+    content: "\r\n"
+  - delay: 180
+    content: "\u001b[1mSaving as regression test...\u001b[0m\r\n"
+  - delay: 120
+    content: "  forbidden: \u001b[91mapprove_refund\u001b[0m  |  expected: \u001b[92mescalate\u001b[0m\r\n"
+  - delay: 320
+    content: "\r\n"
+  - delay: 100
+    content: "\u001b[2m-----------------------------------------\u001b[0m\r\n"
+  - delay: 250
+    content: "\u001b[1mReplay #1\u001b[0m -- buggy agent (regression should be caught)\r\n"
+  - delay: 140
+    content: "  \u001b[91m[FAIL]\u001b[0m Forbidden action 'approve_refund' was called during replay.\r\n"
+  - delay: 450
+    content: "\r\n"
+  - delay: 250
+    content: "\u001b[1mReplay #2\u001b[0m -- fixed agent (regression should be resolved)\r\n"
+  - delay: 140
+    content: "  \u001b[92m[PASS]\u001b[0m No forbidden actions called; all expected actions present.\r\n"
+  - delay: 100
+    content: "\u001b[2m-----------------------------------------\u001b[0m\r\n"
+  - delay: 200
+    content: "\u001b[1m1 failure caught. 1 resolved.\u001b[0m\r\n"
+  - delay: 300
+    content: "\r\n"
+  - delay: 600
+    content: "\u001b[2m~/\u001b[0m "
